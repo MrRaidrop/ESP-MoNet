@@ -21,6 +21,20 @@ This project is a modular embedded system template based on the ESP32 platform, 
 | Main Logic    | `main.c`                 | Application entry point; coordinates task startup |
 
 ---
+### 🗂️ Project Progress
+
+| Module                        | Status        | Description                                      |
+|------------------------------|---------------|--------------------------------------------------|
+| UART Serial Communication    | ✅ Done        | Supports echo and queue buffering               |
+| Wi-Fi Configuration          | ✅ Done        | Auto-reconnect and logging supported             |
+| JSON Formatting + Timestamp  | ✅ Done        | Uses `esp_timer_get_time()` for time tracking    |
+| HTTPS Data Upload            | ✅ Done        | Periodic JSON POST to cloud server               |
+| Git Management & GitHub Push | ✅ Done        | Version-controlled and open-sourced              |
+| I2C Sensor Integration       | ⏳ In Progress | Pending hardware validation                      |
+| DMA + Half-Full Interrupt    | ⏳ In Progress | Planned for non-blocking buffer transfer         |
+| MQTTs Data Upload            | 🔜 Coming Soon | JSON integration and secure cloud publishing     |
+| BLE & Flutter Mobile App     | 🔜 Coming Soon | UI and service structure under design            |
+| Documentation & Packaging    | 🔜 Planned     | Includes README, architecture diagrams, and docs |
 
 ## 📁 Project Structure
 
@@ -42,6 +56,33 @@ README.md
 ```
 
 ---
+### 📐 Project Architecture
+
+```mermaid
+graph TD
+    UART[UART Serial Input]
+    DMA[DMA Engine<br>+ Ring Buffer]
+    SENSOR[Sensor Handler]
+    JSON[JSON Packager<br>(Timestamp + Sensor)]
+    WIFI[Wi-Fi Manager]
+    HTTPS[HTTPS Client]
+    MQTT[MQTT Client]
+    BLE[BLE GATT Server]
+    APP[Flutter App]
+    CLOUD[MQTT / HTTPS Cloud Server]
+    LINUX[Linux Terminal<br>Subscriber]
+
+    UART --> DMA --> SENSOR
+    SENSOR --> JSON
+    JSON --> HTTPS
+    JSON --> MQTT
+    JSON --> BLE
+
+    BLE --> APP
+    MQTT --> CLOUD
+    HTTPS --> CLOUD
+    CLOUD --> LINUX
+```
 
 ## 🚀 Build & Run
 
