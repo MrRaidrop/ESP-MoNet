@@ -16,6 +16,7 @@
 #include "json_utils.h"
 #include "log_wrapper.h"
 #include "https_post.h"
+#include "light_sensor_service.h"
 
 #define WIFI_SSID      "zhenghao的iPhone"
 #define WIFI_PASS      "12345678"
@@ -23,20 +24,29 @@
 
 static int post_counter = 0;
 
-static void uart_hello_task(void *pvParameters)
+static void uart_light_send_task(void *pvParameters)
 {
-    const char *hello_str = "hello from esp32";
+    ESP_LOGI(TAG, "UART light send task started");
     while (1) {
-        uart_write_string(hello_str);  // 自动添加 \r\n
+        int val = light_sensor_get_cached_value();
+        char msg[64];
+        snprintf(msg, sizeof(msg), "Light ADC: %d", val);
+        uart_write_string(msg);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+}
+
+void uart_service_start(void)
+{
+    uart_init();
+    xTaskCreate(uart_light_send_task, "uart_light_send_task", 2048, NULL, 5, NULL);
+    ESP_LOGI("uart", "UART service started");
 }
 
 static void post_task(void *pvParameters)
 {
     EventGroupHandle_t wifi_event = wifi_init_sta(WIFI_SSID, WIFI_PASS);
 
-    // 等待 Wi-Fi 连接
     EventBits_t bits = xEventGroupWaitBits(wifi_event, WIFI_CONNECTED_BIT,
                                            pdFALSE, pdTRUE, portMAX_DELAY);
     if (!(bits & WIFI_CONNECTED_BIT)) {
@@ -69,12 +79,8 @@ void app_main(void)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
 
-    // 初始化 UART 模块（含任务）
-    uart_init();
+    light_sensor_service_start();
+    uart_service_start();
 
-    // 启动 Hello 串口打印任务
-    xTaskCreate(uart_hello_task, "uart_hello_task", 2048, NULL, 5, NULL);
-
-    // 启动周期 POST 任务
     xTaskCreate(post_task, "post_task", 8192, NULL, 5, NULL);
 }

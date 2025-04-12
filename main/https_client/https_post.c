@@ -11,10 +11,13 @@ void http_post_json(const char *json)
     esp_http_client_config_t config = {
         .url = "https://40.233.83.32:8443/data",
         .method = HTTP_METHOD_POST,
-        .cert_pem = NULL,
+        .cert_pem = NULL,  // 不传入 CA 证书
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
+        .skip_cert_common_name_check = true,  // ✅ 跳过 CN 校验
+        .use_global_ca_store = false,         // ✅ 不使用全局 CA
         .timeout_ms = 5000,
     };
+
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
     esp_http_client_set_header(client, "Content-Type", "application/json");

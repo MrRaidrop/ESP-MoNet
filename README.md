@@ -131,6 +131,46 @@ A JSON packet is uploaded every 5 seconds with the following structure:
   "hello": 23
 }
 ```
+### 📦 Light Sensor Module (Photoresistor ADC Reader)
+
+This module continuously reads the analog voltage from a photoresistor (light-dependent resistor) through an ESP32 ADC input pin. It runs in a FreeRTOS task and prints whether the environment is "bright" or "dark" based on a configurable threshold.
+
+---
+
+#### ✅ Features
+
+- Uses ESP32's ADC1 to read analog voltage from the sensor
+- Creates an internal FreeRTOS task to poll light values
+- Automatically handles ADC initialization
+- Prints real-time brightness state (🌞 / 🌑)
+- Lightweight and easy to integrate
+
+---
+
+#### 🔌 Default Configuration
+
+| Macro Name             | Default Value        | Description                       |
+|------------------------|----------------------|-----------------------------------|
+| `LIGHT_SENSOR_CHANNEL` | `ADC1_CHANNEL_2`     | ADC channel used (GPIO3 by default) |
+| `DARK_THRESHOLD`       | `2000`               | Threshold to determine darkness (0–4095) |
+
+> ✅ **To change the input GPIO**, modify `LIGHT_SENSOR_CHANNEL` in `light_sensor.c`.
+
+Example replacements:
+
+| GPIO | Macro Value         |
+|------|---------------------|
+| 3    | `ADC1_CHANNEL_2`    |
+| 4    | `ADC1_CHANNEL_3`    |
+| 5    | `ADC1_CHANNEL_4`    |
+| 6    | `ADC1_CHANNEL_5`    |
+
+---
+
+#### 🔧 Function Interface
+
+```c
+void light_sensor_start(void);
 
 ---
 
