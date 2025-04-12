@@ -1,6 +1,6 @@
 # 🌐 ESP32 Modular IoT Framework
 
-A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor, and future support for MQTT and BLE mobile interaction.
+A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and future support for MQTT and BLE mobile interaction.
 
 ---
 
@@ -44,7 +44,7 @@ main/
 
 ##  Current Architecture
 
-```mermaid
+```
 graph TD
     SENSOR[Light Sensor (ADC)]
     SERVICE[light_sensor_service.c]
