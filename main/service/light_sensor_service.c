@@ -21,12 +21,12 @@ static void light_sensor_task(void *pvParameters)
     ESP_LOGI(TAG, "Light sensor task started");
     while (1) {
         latest_light_value = light_sensor_driver_read_raw();
-        ESP_LOGI(TAG, "Raw ADC: %d", latest_light_value);
+        //ESP_LOGI(TAG, "Raw ADC: %d", latest_light_value);
 
         if (latest_light_value > LIGHT_SENSOR_THRESHOLD) {
-            ESP_LOGW(TAG, "🌑 Dark or covered");
+            //ESP_LOGW(TAG, "🌑 Dark or covered");
         } else {
-            ESP_LOGI(TAG, "🌞 Bright environment");
+            //ESP_LOGI(TAG, "🌞 Bright environment");
         }
         vTaskDelay(pdMS_TO_TICKS(500));
     }

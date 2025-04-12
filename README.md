@@ -1,213 +1,153 @@
-# ESP32 Wi-Fi UART HTTPS Project Template
+# 🌐 ESP32 Modular IoT Framework
 
-This project is a modular embedded system template based on the ESP32 platform, featuring the following functionalities:
-
-- UART data reception with automatic echo
-- Periodic HTTPS POST (every 5 seconds) to a cloud server with JSON payload
-- JSON includes UART data, timestamp, and a counter
-- Automatic Wi-Fi reconnection mechanism
-- Fully modular codebase, easy to extend and maintain
+A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor, and future support for MQTT and BLE mobile interaction.
 
 ---
 
-## 🔧 Functional Modules
+##  Features
 
-| Module        | File(s)                  | Description                                      |
-|---------------|--------------------------|--------------------------------------------------|
-| UART Driver   | `uart_handler.c/h`       | Initializes UART1, receives serial data, provides write interface |
-| Wi-Fi Manager | `wifi_manager.c/h`       | Handles Wi-Fi connection with event group support |
-| JSON Builder  | `json_utils.c/h`         | Packages UART data with timestamp into JSON      |
-| HTTPS Upload  | `https_client/https_post.c/h` | Sends JSON payload to server via HTTPS POST     |
-| Main Logic    | `main.c`                 | Application entry point; coordinates task startup |
+-  Auto-reconnecting Wi-Fi connection manager
+-  Periodic light sensor reading via ADC
+-  Secure HTTPS POST to cloud with JSON data
+-  Data reporter module with 5-second upload loop
+-  UART echo for sensor debugging
+-  Modular source structure for scalability
+-  Future-ready for BLE & MQTT integration
 
 ---
-### 🗂️ Project Progress
 
-| Module                        | Status        | Description                                      |
-|------------------------------|---------------|--------------------------------------------------|
-| UART Serial Communication    | ✅ Done        | Supports echo and queue buffering               |
-| Wi-Fi Configuration          | ✅ Done        | Auto-reconnect and logging supported             |
-| JSON Formatting + Timestamp  | ✅ Done        | Uses `esp_timer_get_time()` for time tracking    |
-| HTTPS Data Upload            | ✅ Done        | Periodic JSON POST to cloud server               |
-| Git Management & GitHub Push | ✅ Done        | Version-controlled and open-sourced              |
-| I2C Sensor Integration       | ⏳ In Progress | Pending hardware validation                      |
-| DMA + Half-Full Interrupt    | ⏳ In Progress | Planned for non-blocking buffer transfer         |
-| MQTTs Data Upload            | 🔜 Coming Soon | JSON integration and secure cloud publishing     |
-| BLE & Flutter Mobile App     | 🔜 Coming Soon | UI and service structure under design            |
-| Documentation & Packaging    | 🔜 Planned     | Includes README, architecture diagrams, and docs |
-
-## 📁 Project Structure
+##  Project Structure
 
 ```
 main/
-├── main.c
-├── uart_handler.c
-├── uart_handler.h
-├── wifi_manager.c
-├── wifi_manager.h
-├── json_utils.c
-├── json_utils.h
-├── https_client/
-│   ├── https_post.c
-│   └── https_post.h
-├── log_wrapper.h      // Optional: macro-based logging control
-CMakeLists.txt
-README.md
+├── bsp/                    # Hardware drivers (e.g., ADC light sensor)
+│   ├── light_sensor_driver.c/h
+│
+├── https_client/          # HTTPS POST module
+│   ├── https_post.c/h
+│
+├── service/               # Runtime service modules
+│   ├── data_reporter.c/h          # Collect + upload data
+│   ├── light_sensor_service.c/h   # Manage light sensor logic + caching
+│   ├── uart_handler.c/h           # UART handling
+│
+├── utils/                 # Utility modules
+│   ├── json_utils.c/h             # Build JSON payload
+│
+├── wifi_manager.c/h       # Wi-Fi connection logic
+├── main.c                 # Top-level startup entry
+├── log_wrapper.h          # Optional logging macro
+├── README.md              # You're reading it!
 ```
 
 ---
-### 📐 Project Architecture
+
+##  Current Architecture
 
 ```mermaid
 graph TD
-    UART[UART Serial Input]
-    DMA[DMA Engine<br>+ Ring Buffer]
-    SENSOR[Sensor Handler]
-    JSON[JSON Packager<br>(Timestamp + Sensor)]
-    WIFI[Wi-Fi Manager]
-    HTTPS[HTTPS Client]
-    MQTT[MQTT Client]
-    BLE[BLE GATT Server]
-    APP[Flutter App]
-    CLOUD[MQTT / HTTPS Cloud Server]
-    LINUX[Linux Terminal<br>Subscriber]
+    SENSOR[Light Sensor (ADC)]
+    SERVICE[light_sensor_service.c]
+    REPORT[data_reporter.c]
+    JSON[json_utils.c]
+    POST[https_post.c]
+    CLOUD[Cloud Server]
+    UART[UART Handler]
+    MONITOR[Serial Output]
 
-    UART --> DMA --> SENSOR
-    SENSOR --> JSON
-    JSON --> HTTPS
-    JSON --> MQTT
-    JSON --> BLE
-
-    BLE --> APP
-    MQTT --> CLOUD
-    HTTPS --> CLOUD
-    CLOUD --> LINUX
+    SENSOR --> SERVICE
+    SERVICE --> REPORT
+    REPORT --> JSON
+    JSON --> POST
+    POST --> CLOUD
+    SERVICE --> UART
+    UART --> MONITOR
 ```
 
-## 🚀 Build & Run
+---
 
-### 1. Environment Setup
+## 🔧 Getting Started
 
-Use [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html) version 5.4 or compatible. It’s recommended to use `esp-idf-tools` for environment configuration.
+### 1. Prerequisites
+
+- ESP-IDF 5.4+ installed and configured
+- Supported board: ESP32-S3 devkit
+- Internet access for cloud upload
+
+### 2. Build and Flash
 
 ```bash
-cd hello_world
 idf.py set-target esp32s3
 idf.py build
 idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
-### 2. Wi-Fi Configuration
+### 3. Wi-Fi Configuration
 
-Edit the `main.c` file:
+Update your SSID and password in `data_reporter.c`:
 
 ```c
-#define WIFI_SSID      "your-ssid"
-#define WIFI_PASS      "your-password"
+#define WIFI_SSID "your-ssid"
+#define WIFI_PASS "your-password"
 ```
 
 ---
 
-## 📡 Server Upload Configuration
+##  JSON Upload Format
 
-The HTTPS POST destination is defined in `https_client/https_post.c`:
-
-```c
-.url = "https://40.233.83.32:8443/data"
-```
-
-> ✅ HTTPS supported. For testing purposes, certificate verification is currently disabled.
-
----
-
-## 🔄 JSON Payload Example
-
-A JSON packet is uploaded every 5 seconds with the following structure:
+Data is uploaded every 5 seconds with structure like:
 
 ```json
 {
   "esp32": "2025-04-11 14:23:52",
-  "uart_data": "Hello from UART",
+  "uart_data": "light: 472",
   "hello": 23
 }
 ```
-### 📦 Light Sensor Module (Photoresistor ADC Reader)
 
-This module continuously reads the analog voltage from a photoresistor (light-dependent resistor) through an ESP32 ADC input pin. It runs in a FreeRTOS task and prints whether the environment is "bright" or "dark" based on a configurable threshold.
+You can modify `json_utils.c` to use field-style format instead:
 
----
-
-#### ✅ Features
-
-- Uses ESP32's ADC1 to read analog voltage from the sensor
-- Creates an internal FreeRTOS task to poll light values
-- Automatically handles ADC initialization
-- Prints real-time brightness state (🌞 / 🌑)
-- Lightweight and easy to integrate
+```json
+{
+  "timestamp": "2025-04-11T14:23:52",
+  "light": 472,
+  "count": 23
+}
+```
 
 ---
 
-#### 🔌 Default Configuration
+## 🚀 Roadmap
 
-| Macro Name             | Default Value        | Description                       |
-|------------------------|----------------------|-----------------------------------|
-| `LIGHT_SENSOR_CHANNEL` | `ADC1_CHANNEL_2`     | ADC channel used (GPIO3 by default) |
-| `DARK_THRESHOLD`       | `2000`               | Threshold to determine darkness (0–4095) |
-
-> ✅ **To change the input GPIO**, modify `LIGHT_SENSOR_CHANNEL` in `light_sensor.c`.
-
-Example replacements:
-
-| GPIO | Macro Value         |
-|------|---------------------|
-| 3    | `ADC1_CHANNEL_2`    |
-| 4    | `ADC1_CHANNEL_3`    |
-| 5    | `ADC1_CHANNEL_4`    |
-| 6    | `ADC1_CHANNEL_5`    |
+| Feature                         | Status        | Notes                                  |
+|----------------------------------|---------------|----------------------------------------|
+| Light sensor ADC driver         | ✅ Done        | Caches latest value every second       |
+| JSON packaging utility          | ✅ Done        | Can be adapted for MQTT/BLE            |
+| HTTPS POST to cloud             | ✅ Done        | JSON content, no CA cert required      |
+| Modular task architecture       | ✅ Done        | Using FreeRTOS tasks                   |
+| GitHub repo + documentation     | ✅ Done        | Modular code + diagram                 |
+| DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor      |
+| MQTT secure upload              | 🔜 Planned     | Add TLS MQTT broker support            |
+| BLE GATT + mobile app           | 🔜 Planned     | Using Flutter + ESP32 BLE              |
+| OTA update integration          | ⏳ In Progress | Optional for remote firmware updates   |
 
 ---
 
-#### 🔧 Function Interface
+## 🧪 Example Use Cases
 
-```c
-void light_sensor_start(void);
-
----
-
-## 📦 Planned Feature Roadmap (in progress)
-
-The project will be extended in future stages with additional modules. Features will be developed and tested incrementally:
-
-### ✅ Sensor Data Acquisition & Caching
-- [ ] Use **I2C** to connect two sensors: ultrasonic distance + temperature/humidity (e.g., SHT31 or DHT12)
-- [ ] Use **DMA + ring buffer** for non-blocking data collection
-- [ ] Implement **half-full DMA interrupt** for mid-buffer processing and full-buffer trigger for upload
-- [ ] All data packets include **timestamp** and unified JSON format
-
-### ✅ BLE Module (Mobile Communication)
-- [ ] Implement ESP32 BLE GATT to broadcast and allow reading of recent data
-- [ ] Develop a **Flutter mobile app**, including emulator support to:
-  - Display connection status
-  - Show real-time sensor data and timestamps
-- [ ] Evaluate BLE performance (throughput, frame size, stability)
-
-### ✅ MQTTs Cloud Integration
-- [ ] Add MQTTs client (TLS enabled) on ESP32
-- [ ] Buffer and upload data to an MQTT broker (e.g., `mqtts://example.com:8883`)
-- [ ] Subscribe and process incoming data using Linux tools (`mosquitto_sub`, etc.)
-
-### ✅ System Integration Phase
-- [ ] Complete pipeline: DMA acquisition → JSON packaging → MQTTs upload
-- [ ] Synchronize BLE broadcasting with the latest sensor data
-- [ ] Add fault recovery (Wi-Fi reconnection, buffer overflow protection, etc.)
-
----
-
-🛠 Current Status: *Modular design and initial framework completed*  
-📅 Last Updated: 2025-04-11
+- Low-power sensor node with cloud logging
+- BLE + UART + MQTT hybrid IoT edge device
+- Sensor/actuator hub with REST and mobile access
+- ESP32 data pipeline demo for job portfolio
 
 ---
 
 ## 📜 License
 
-MIT License – Free to use, study, and modify. Feel free to fork this project as a base for your own ESP32 development!
+MIT License — Use freely, modify, and integrate.
+
+---
+
+🛠️ Last Updated: April 11, 2025  
+Made with ❤️ by [Greyson Yu](https://github.com/MrRaidrop)
+

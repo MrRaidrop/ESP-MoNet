@@ -2,8 +2,8 @@ idf_component_register(
     SRCS 
         main.c
         wifi_manager.c
-        
-        json_utils.c
+        service/data_reporter.c
+        utils/json_utils.c
         service/light_sensor_service.c
         bsp/light_sensor_driver.c
         service/uart_handler.c
@@ -13,6 +13,7 @@ idf_component_register(
                  "https_client"
                  "bsp"
                  "service"
+                 "utils"
 
     PRIV_REQUIRES
         esp_http_client 

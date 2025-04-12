@@ -1,4 +1,3 @@
-char *build_json_payload(const char *uart_data, int *counter);
 // json_utils.h
 #pragma once
 
