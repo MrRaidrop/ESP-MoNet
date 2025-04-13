@@ -70,7 +70,7 @@ graph TD
 
 ### 1. Prerequisites
 
-- ESP-IDF 5.4+ installed and configured
+- ESP-IDF 5.4+ installed and configured (Vscode ESP-IDF extension available)
 - Supported board: ESP32-S3 devkit
 - Internet access for cloud upload
 

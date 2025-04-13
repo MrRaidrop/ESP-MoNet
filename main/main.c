@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #include "https_post.h"
 #include "light_sensor_service.h"
 #include "data_reporter.h"
+#include "ble_service.h"
 
 #define WIFI_SSID      "zhenghao的iPhone"
 #define WIFI_PASS      "12345678"
@@ -44,12 +46,16 @@ void uart_service_start(void)
     ESP_LOGI("uart", "UART service started");
 }
 
+
 void app_main(void)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
 
     light_sensor_service_start();
-    uart_service_start();
+    //uart_service_start();
 
-    data_reporter_start(); 
+    //data_reporter_start(); 
+    vTaskDelay(pdMS_TO_TICKS(500));
+    ble_service_start();  
 }
+

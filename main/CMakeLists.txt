@@ -8,17 +8,13 @@ idf_component_register(
         bsp/light_sensor_driver.c
         service/uart_handler.c
         https_client/https_post.c
+        service/ble_service.c
         
-    INCLUDE_DIRS "."
-                 "https_client"
-                 "bsp"
-                 "service"
-                 "utils"
+    INCLUDE_DIRS "." "https_client" "bsp" "service" "utils"
 
-    PRIV_REQUIRES
+    REQUIRES
         esp_http_client 
         esp-tls
-
         esp_wifi
         esp_netif
         nvs_flash
@@ -27,6 +23,7 @@ idf_component_register(
         driver
         spi_flash
         json
+        bt
 
 # 添加 DEBUG_LOG 宏，只在 Debug 模式启用
 #target_compile_definitions(${COMPONENT_LIB} PRIVATE
