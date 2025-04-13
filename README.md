@@ -1,6 +1,6 @@
-# 🌐 ESP32 Modular IoT Framework
+# 🌐 ESP32 Modular IoT Framework 
 
-A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and future support for MQTT and BLE mobile interaction.
+A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and **BLE GATT-based mobile communication**. Future support for MQTT is also planned.
 
 ---
 
@@ -11,8 +11,9 @@ A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The
 -  Secure HTTPS POST to cloud with JSON data
 -  Data reporter module with 5-second upload loop
 -  UART echo for sensor debugging
+-  **BLE GATT Server: Notify mobile device with sensor data (e.g., light value)**
 -  Modular source structure for scalability
--  Future-ready for BLE & MQTT integration
+-  Future-ready for MQTT integration
 
 ---
 
@@ -30,6 +31,7 @@ main/
 │   ├── data_reporter.c/h          # Collect + upload data
 │   ├── light_sensor_service.c/h   # Manage light sensor logic + caching
 │   ├── uart_handler.c/h           # UART handling
+│   ├── ble_service.c/h            # BLE GATT service logic
 │
 ├── utils/                 # Utility modules
 │   ├── json_utils.c/h             # Build JSON payload
@@ -54,6 +56,8 @@ graph TD
     CLOUD[Cloud Server]
     UART[UART Handler]
     MONITOR[Serial Output]
+    BLE[BLE GATT Server]
+    PHONE[Mobile App (e.g., nRF Connect)]
 
     SENSOR --> SERVICE
     SERVICE --> REPORT
@@ -62,6 +66,8 @@ graph TD
     POST --> CLOUD
     SERVICE --> UART
     UART --> MONITOR
+    SERVICE --> BLE
+    BLE --> PHONE
 ```
 
 ---
@@ -73,6 +79,7 @@ graph TD
 - ESP-IDF 5.4+ installed and configured (Vscode ESP-IDF extension available)
 - Supported board: ESP32-S3 devkit
 - Internet access for cloud upload
+- BLE mobile app (e.g., **nRF Connect** by Nordic)
 
 ### 2. Build and Flash
 
@@ -90,6 +97,14 @@ Update your SSID and password in `data_reporter.c`:
 #define WIFI_SSID "your-ssid"
 #define WIFI_PASS "your-password"
 ```
+
+### 4. BLE Verification
+
+- Install **nRF Connect** mobile app
+- Scan and connect to `ESP_GATTS_DEMO`
+- Locate the characteristic under service UUID `0x00FF`
+- Enable **Notify**
+- You will receive 4-byte little-endian integer (e.g., light = `0x0802 = 520`)
 
 ---
 
@@ -126,9 +141,9 @@ You can modify `json_utils.c` to use field-style format instead:
 | HTTPS POST to cloud             | ✅ Done        | JSON content, no CA cert required      |
 | Modular task architecture       | ✅ Done        | Using FreeRTOS tasks                   |
 | GitHub repo + documentation     | ✅ Done        | Modular code + diagram                 |
+| **BLE GATT notification**       | ✅ Done        | Sends int light value every 3 seconds  |
 | DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor      |
 | MQTT secure upload              | 🔜 Planned     | Add TLS MQTT broker support            |
-| BLE GATT + mobile app           | 🔜 Planned     | Using Flutter + ESP32 BLE              |
 | OTA update integration          | ⏳ In Progress | Optional for remote firmware updates   |
 
 ---
@@ -150,4 +165,3 @@ MIT License — Use freely, modify, and integrate.
 
 🛠️ Last Updated: April 11, 2025  
 Made with ❤️ by [Greyson Yu](https://github.com/MrRaidrop)
-
