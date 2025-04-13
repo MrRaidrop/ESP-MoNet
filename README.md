@@ -1,6 +1,8 @@
 # 🌐 ESP32 Modular IoT Framework 
 
-A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and **BLE GATT-based mobile communication**. Future support for MQTT is also planned.
+A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and **BLE GATT-based communication**. Future support for MQTT is also planned.
+
+[![BLE Module CI](https://github.com/MrRaidrop/esp32/esp32_ble_mqtt_https_sensors/actions/workflows/ci.yml/badge.svg)](https://github.com/你的GitHub用户名/你的仓库名/actions/workflows/ci.yml)
 
 ---
 
@@ -72,7 +74,7 @@ graph TD
 
 ---
 
-## 🔧 Getting Started
+##  Getting Started
 
 ### 1. Prerequisites
 
@@ -132,7 +134,7 @@ You can modify `json_utils.c` to use field-style format instead:
 
 ---
 
-## 🚀 Roadmap
+##  Roadmap
 
 | Feature                         | Status        | Notes                                  |
 |----------------------------------|---------------|----------------------------------------|
@@ -148,7 +150,7 @@ You can modify `json_utils.c` to use field-style format instead:
 
 ---
 
-## 🧪 Example Use Cases
+##  Example Use Cases
 
 - Low-power sensor node with cloud logging
 - BLE + UART + MQTT hybrid IoT edge device
@@ -157,7 +159,7 @@ You can modify `json_utils.c` to use field-style format instead:
 
 ---
 
-## 📜 License
+##  License
 
 MIT License — Use freely, modify, and integrate.
 

@@ -1,18 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2021-2024 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Unlicense OR CC0-1.0
- */
-
-/****************************************************************************
-*
-* This demo showcases BLE GATT server. It can send adv data, be connected by client.
-* Run the gatt_client demo, the client demo will automatically connect to the gatt_server demo.
-* Client demo will enable gatt_server's notify after connection. The two devices will then exchange
-* data.
-*
-****************************************************************************/
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +21,8 @@
 #include "sdkconfig.h"
 
 #include "light_sensor_service.h"
+#include "ble_format_utils.h"
+
 
 #define GATTS_TAG "GATTS_DEMO"
 
@@ -43,7 +30,7 @@
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 extern int light_sensor_get_cached_value(void);
-
+extern void ble_format_notify_data(int value, uint8_t *out);
 #define GATTS_SERVICE_UUID_TEST_A   0x00FF
 #define GATTS_CHAR_UUID_TEST_A      0xFF01
 #define GATTS_DESCR_UUID_TEST_A     0x3333
@@ -766,10 +753,7 @@ static void ble_notify_task(void *arg) {
             
             int value = light_sensor_get_cached_value();
             uint8_t data[4];
-            data[0] = (value >> 0) & 0xFF;
-            data[1] = (value >> 8) & 0xFF;
-            data[2] = (value >> 16) & 0xFF;
-            data[3] = (value >> 24) & 0xFF;
+            ble_format_notify_data(value, data);
 
             esp_ble_gatts_send_indicate(
                 gl_profile_tab[PROFILE_A_APP_ID].gatts_if,

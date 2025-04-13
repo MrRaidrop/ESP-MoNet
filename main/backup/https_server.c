@@ -95,7 +95,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("✅ HTTPS Server listening on https://0.0.0.0:%d (Max %d clients)\n", PORT, MAX_CONN);
+    printf(" HTTPS Server listening on https://0.0.0.0:%d (Max %d clients)\n", PORT, MAX_CONN);
 
     while (1) {
         struct sockaddr_in client_addr;

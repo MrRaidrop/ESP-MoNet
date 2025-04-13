@@ -30,6 +30,11 @@ This is a lightweight custom HTTPS server implemented in C using OpenSSL. It sec
 
 The server is launched and monitored using a `systemd` unit:
 
+Please Change this two line of code if you keys are in different directory
+
+SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM) <= 0 ||
+SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM) <= 0)
+
 ```ini
 # /etc/systemd/system/my_https_server.service
 

@@ -4,6 +4,7 @@ idf_component_register(
         wifi_manager.c
         service/data_reporter.c
         utils/json_utils.c
+        utils/ble_format_utils.c
         service/light_sensor_service.c
         bsp/light_sensor_driver.c
         service/uart_handler.c

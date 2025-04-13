@@ -95,7 +95,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("✅ HTTPS Server listening on https://0.0.0.0:%d (Max %d clients)\n", PORT, MAX_CONN);
+    printf(" HTTPS Server listening on https://0.0.0.0:%d (at Max %d clients)\n", PORT, MAX_CONN);
 
     while (1) {
         struct sockaddr_in client_addr;
@@ -112,7 +112,7 @@ int main() {
         SSL_set_fd(ssl, client_fd);
 
         if (SSL_accept(ssl) <= 0) {
-            fprintf(stderr, "❌ TLS handshake failed\n");
+            fprintf(stderr, "GG, TLS handshake failed\n");
             ERR_print_errors_fp(stderr);
         } else {
             handle_request(ssl);

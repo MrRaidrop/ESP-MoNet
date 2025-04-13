@@ -1,0 +1,30 @@
+name: BLE Module CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up build tools
+      run: sudo apt-get update && sudo apt-get install -y gcc make
+
+    - name: Run BLE unit tests
+      run: |
+        cd test
+        gcc -Iunity/src -I../main/utils test_ble.c ../main/utils/ble_format_utils.c unity/src/unity.c -o test_ble
+        ./test_ble
+
+    - name: Discover and run all tests
+      run: |
+       # cd test 
+       # make test  
+
