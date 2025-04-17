@@ -1,17 +1,18 @@
-// server code backup
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <netinet/in.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <time.h>
 
 #define PORT 8443
-#define MAX_CONN 5
+#define MAX_CONN 10
 
 time_t start_time;
+SSL_CTX *ctx; // 全局 SSL context
 
 void handle_request(SSL *ssl) {
     char buf[4096] = {0};
@@ -42,6 +43,29 @@ void handle_request(SSL *ssl) {
             printf("POST body not found\n");
         }
         snprintf(body, sizeof(body), "{\"result\": \"received\"}");
+    } else if (strcmp(method, "GET") == 0 && strcmp(path, "/firmware.bin") == 0) {
+        FILE *fp = fopen("firmware.bin", "rb");
+        if (fp) {
+            fseek(fp, 0, SEEK_END);
+            long filesize = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+            char *bin_data = malloc(filesize);
+            fread(bin_data, 1, filesize, fp);
+            fclose(fp);
+
+            char header_buf[512];
+            snprintf(header_buf, sizeof(header_buf),
+                     "HTTP/1.1 200 OK\r\n"
+                     "Content-Type: application/octet-stream\r\n"
+                     "Content-Length: %ld\r\n"
+                     "Content-Disposition: attachment; filename=\"firmware.bin\"\r\n\r\n", filesize);
+            SSL_write(ssl, header_buf, strlen(header_buf));
+            SSL_write(ssl, bin_data, filesize);
+            free(bin_data);
+            return;
+        } else {
+            snprintf(body, sizeof(body), "{\"error\": \"firmware not found\"}");
+        }
     } else {
         snprintf(body, sizeof(body), "{\"error\": \"not found\"}");
     }
@@ -51,14 +75,36 @@ void handle_request(SSL *ssl) {
     SSL_write(ssl, response, strlen(response));
 }
 
+void *client_thread(void *arg) {
+    int client_fd = *(int *)arg;
+    free(arg);
+
+    SSL *ssl = SSL_new(ctx);
+    SSL_set_fd(ssl, client_fd);
+
+    if (SSL_accept(ssl) <= 0) {
+        fprintf(stderr, "TLS handshake failed\n");
+        ERR_print_errors_fp(stderr);
+    } else {
+        printf("📡 New client connected\n");
+        handle_request(ssl);
+    }
+
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+    close(client_fd);
+    return NULL;
+}
+
 int main() {
     start_time = time(NULL);
 
+    // 初始化 OpenSSL
     SSL_library_init();
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
     const SSL_METHOD *method = TLS_server_method();
-    SSL_CTX *ctx = SSL_CTX_new(method);
+    ctx = SSL_CTX_new(method);
     if (!ctx) {
         perror("Unable to create SSL context");
         ERR_print_errors_fp(stderr);
@@ -95,35 +141,26 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf(" HTTPS Server listening on https://0.0.0.0:%d (at Max %d clients)\n", PORT, MAX_CONN);
+    printf("✅ HTTPS OTA Server running on https://0.0.0.0:%d (Max %d clients)\n", PORT, MAX_CONN);
 
     while (1) {
         struct sockaddr_in client_addr;
         socklen_t len = sizeof(client_addr);
-        int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &len);
-        if (client_fd < 0) {
+        int *client_fd = malloc(sizeof(int));
+        *client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &len);
+        if (*client_fd < 0) {
             perror("accept failed");
+            free(client_fd);
             continue;
         }
 
-        printf("📡 New client connected\n");
-
-        SSL *ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, client_fd);
-
-        if (SSL_accept(ssl) <= 0) {
-            fprintf(stderr, "GG, TLS handshake failed\n");
-            ERR_print_errors_fp(stderr);
-        } else {
-            handle_request(ssl);
-        }
-
-        SSL_shutdown(ssl);
-        SSL_free(ssl);
-        close(client_fd);
+        pthread_t tid;
+        pthread_create(&tid, NULL, client_thread, client_fd);
+        pthread_detach(tid); // 自动回收线程资源
     }
 
     close(server_fd);
     SSL_CTX_free(ctx);
     return 0;
 }
+// a little bit of multi-thread

@@ -52,9 +52,9 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
 
     light_sensor_service_start();
-    //uart_service_start();
+    uart_service_start();
 
-    //data_reporter_start(); 
+    data_reporter_start(); 
     vTaskDelay(pdMS_TO_TICKS(500));
     ble_service_start();  
 }
