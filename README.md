@@ -9,13 +9,13 @@ how modules interact with eachother
 ##  Features
 
 -  Auto-reconnecting Wi-Fi connection manager
--  Periodic light sensor reading via ADC
+-  Periodic light sensor reading via ADC (because currently I only have light sensor T_T)
 -  Secure HTTPS POST to cloud with JSON data
 -  Data reporter module with 5-second upload loop
 -  UART echo for sensor debugging
 -  BLE GATT Server: Notify mobile device with sensor data (e.g., light value)**
 -  Modular source structure for scalability
--  **Over-the-air (OTA) firmware update (30s after boot, you can change when you want to ota)
+-  **Over-the-air (OTA) firmware update based on wifi** (30s after boot, you can change when you want to ota)
 -  Future-ready for MQTT integration
 
 ---
@@ -109,13 +109,13 @@ Update your SSID and password in `data_reporter.c`:
 
 ### 4. BLE Verification
 
-- Install **nRF Connect** mobile app
+- Install **nRF Connect** mobile app (or other)
 - Scan and connect to `ESP_GATTS_DEMO`
 - Locate the characteristic under service UUID `0x00FF`
 - Enable **Notify**
 - You will receive 4-byte little-endian integer (e.g., light = `0x0802 = 520`)
 
-### OTA Update Test
+### 4. OTA Update Test
 
 Workflow:
 Firmware boots and connects to Wi-Fi
@@ -161,20 +161,22 @@ You can modify `json_utils.c` to use field-style format instead:
 ```
 
 ---
-
 ##  Roadmap
 
-| Feature                         | Status        | Notes                                  |
-|----------------------------------|---------------|----------------------------------------|
-| Light sensor ADC driver         | ✅ Done        | Caches latest value every second       |
-| JSON packaging utility          | ✅ Done        | Can be adapted for MQTT/BLE            |
-| HTTPS POST to cloud             | ✅ Done        | JSON content, no CA cert required      |
-| Modular task architecture       | ✅ Done        | Using FreeRTOS tasks                   |
-| GitHub repo + documentation     | ✅ Done        | Modular code + diagram                 |
-| **BLE GATT notification**       | ✅ Done        | Sends int light value every 3 seconds  |
-| DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor      |
-| MQTT secure upload              | ⏳ In Progress | Add TLS MQTT broker support            |
-| OTA update integration          | ✅ Done        | Optional for remote firmware updates   |
+| Feature                         | Status        | Notes                                                |
+|----------------------------------|---------------|------------------------------------------------------|
+| Light sensor ADC driver         | ✅ Done        | Caches latest value every second                     |
+| JSON packaging utility          | ✅ Done        | Can be adapted for MQTT/BLE                          |
+| HTTPS POST to cloud             | ✅ Done        | JSON content, no CA cert required                    |
+| Modular task architecture       | ✅ Done        | Using FreeRTOS tasks                                 |
+| GitHub repo + documentation     | ✅ Done        | Modular code + diagram                               |
+| **BLE GATT notification**       | ✅ Done        | Sends int light value every 3 seconds                |
+| DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor                    |
+| MQTT secure upload              | ⏳ In Progress | Add TLS MQTT broker support                          |
+| OTA update (Wi-Fi)              | ✅ Done        | HTTPS OTA support using esp_https_ota                |
+| OTA update (BLE)                | 🔜 Planned     | Plan to implement BLE-based OTA update               |
+| Flutter mobile app (sensor UI)  | 🔜 Planned     | Flutter app to visualize sensor data via BLE         |
+| Flutter mobile app (BLE OTA)    | 🔜 Planned     | BLE OTA logic integrated into the Flutter application|
 
 ---
 
@@ -183,7 +185,6 @@ You can modify `json_utils.c` to use field-style format instead:
 - Low-power sensor node with cloud logging
 - BLE + UART + MQTT hybrid IoT edge device
 - Sensor/actuator hub with REST and mobile access
-- ESP32 data pipeline demo for job portfolio
 
 ---
 
