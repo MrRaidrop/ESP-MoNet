@@ -59,3 +59,4 @@ void uart_write_string(const char *str)
         uart_write_bytes(UART_PORT_NUM, "\r\n", 2);
     }
 }
+

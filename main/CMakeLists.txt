@@ -2,14 +2,15 @@ idf_component_register(
     SRCS 
         main.c
         bsp/wifi_manager.c
-        service/data_reporter.c
-        service/wifi_service.c
+        bsp/light_sensor_driver.c
+        bsp/uart_handler.c
         utils/json_utils.c
         utils/ble_format_utils.c
-        service/light_sensor_service.c
-        bsp/light_sensor_driver.c
-        service/uart_handler.c
         net/https_post.c
+        service/data_reporter.c
+        service/wifi_service.c
+        service/light_sensor_service.c
+        service/uart_service.c
         service/ble_service.c
         OTA/https_ota_service.c
         

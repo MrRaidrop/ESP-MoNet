@@ -19,6 +19,7 @@
 #include "light_sensor_service.h"
 #include "data_reporter.h"
 #include "ble_service.h"
+#include "uart_service.h"
 #include "https_ota_service.h" 
 
 #define TAG "MAIN"
@@ -29,24 +30,7 @@
 // For testing OTA update logic after 30s
 #define FIRMWARE_VERSION "hello this version 2"
 
-static void uart_light_send_task(void *pvParameters)
-{
-    ESP_LOGI(TAG, "UART light send task started");
-    while (1) {
-        int val = light_sensor_get_cached_value();
-        char msg[64];
-        snprintf(msg, sizeof(msg), "Light ADC: %d", val);
-        uart_write_string(msg);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
 
-void uart_service_start(void)
-{
-    uart_init();
-    xTaskCreate(uart_light_send_task, "uart_light_send_task", 2048, NULL, 5, NULL);
-    ESP_LOGI("uart", "UART service started");
-}
 
 // ====================== OTA test task =========================== //
 /**
