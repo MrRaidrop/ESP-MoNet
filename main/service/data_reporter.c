@@ -17,6 +17,7 @@ static int post_counter = 0;
 
 static void post_task(void *pvParameters)
 {
+    // I just realize this is bad at modular framework, I will change this soon.
     EventGroupHandle_t wifi_event = wifi_init_sta(WIFI_SSID, WIFI_PASS);
     EventBits_t bits = xEventGroupWaitBits(wifi_event, WIFI_CONNECTED_BIT,
                                            pdFALSE, pdTRUE, portMAX_DELAY);

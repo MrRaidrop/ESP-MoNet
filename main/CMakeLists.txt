@@ -1,19 +1,23 @@
 idf_component_register(
     SRCS 
         main.c
-        wifi_manager.c
+        bsp/wifi_manager.c
         service/data_reporter.c
+        service/wifi_service.c
         utils/json_utils.c
         utils/ble_format_utils.c
         service/light_sensor_service.c
         bsp/light_sensor_driver.c
         service/uart_handler.c
-        https_client/https_post.c
+        net/https_post.c
         service/ble_service.c
+        OTA/https_ota_service.c
         
-    INCLUDE_DIRS "." "https_client" "bsp" "service" "utils"
+    INCLUDE_DIRS "." "net" "bsp" "service" "utils" "OTA"
 
     REQUIRES
+        esp_https_ota
+        app_update
         esp_http_client 
         esp-tls
         esp_wifi

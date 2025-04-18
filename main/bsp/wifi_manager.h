@@ -1,6 +1,7 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
+#include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
 #ifdef __cplusplus

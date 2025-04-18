@@ -10,6 +10,7 @@ A lightweight custom HTTPS server implemented in C using OpenSSL. It serves firm
 - `POST /data` accepts and logs JSON payloads
 - Multithreaded design, supports up to 10 concurrent clients
 - Can run as a background service using `systemd`
+- And sorry it is a little bit hard to read the code, I didn't make it modular because this project is not about the server.
 
 ## Directory Structure
 
