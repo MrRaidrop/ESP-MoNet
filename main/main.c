@@ -19,6 +19,7 @@
 #include "light_sensor_service.h"
 #include "data_reporter.h"
 #include "ble_service.h"
+#include "wifi_service.h"
 #include "uart_service.h"
 #include "https_ota_service.h" 
 
@@ -60,9 +61,14 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
+    if (!wifi_service_start_and_wait(WIFI_SSID, WIFI_PASS, 10000)) {
+        ESP_LOGE(TAG, "Wi-Fi failed");
+        return;
+    }
+
     light_sensor_service_start();
     uart_service_start();
-    data_reporter_start();
+    //data_reporter_start();
     vTaskDelay(pdMS_TO_TICKS(500));
     ble_service_start();
 

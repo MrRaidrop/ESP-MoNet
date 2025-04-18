@@ -1,31 +1,22 @@
+#include <stdio.h>             // for snprintf
+#include <string.h>            // for string ops if needed
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/event_groups.h"
 #include "esp_log.h"
-#include "light_sensor_service.h"
-#include "json_utils.h"
-#include "https_post.h"
-#include "wifi_manager.h"
+
+#include "light_sensor_service.h"   // for light_sensor_get_cached_value()
+#include "json_utils.h"            // for build_json_payload()
+#include "https_post.h"            // for http_post_json()
+
 
 #define TAG "data_reporter"
+#define POST_INTERVAL_MS 5000  // 每 5 秒发送一次
 
-#define POST_INTERVAL_MS 5000
-#define WIFI_SSID "zhenghao的iPhone"
-#define WIFI_PASS "12345678"
 
 static int post_counter = 0;
 
 static void post_task(void *pvParameters)
 {
-    // I just realize this is bad at modular framework, I will change this soon.
-    EventGroupHandle_t wifi_event = wifi_init_sta(WIFI_SSID, WIFI_PASS);
-    EventBits_t bits = xEventGroupWaitBits(wifi_event, WIFI_CONNECTED_BIT,
-                                           pdFALSE, pdTRUE, portMAX_DELAY);
-
-    if (!(bits & WIFI_CONNECTED_BIT)) {
-        ESP_LOGE(TAG, "Wi-Fi failed");
-        vTaskDelete(NULL);
-    }
 
     while (1) {
         int light_val = light_sensor_get_cached_value();

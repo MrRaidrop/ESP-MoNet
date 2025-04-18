@@ -13,8 +13,9 @@ how modules interact with eachother
 -  Secure HTTPS POST to cloud with JSON data
 -  Data reporter module with 5-second upload loop
 -  UART echo for sensor debugging
--  **BLE GATT Server: Notify mobile device with sensor data (e.g., light value)**
+-  BLE GATT Server: Notify mobile device with sensor data (e.g., light value)**
 -  Modular source structure for scalability
+-  **Over-the-air (OTA) firmware update (30s after boot, you can change when you want to ota)
 -  Future-ready for MQTT integration
 
 ---
@@ -23,25 +24,31 @@ how modules interact with eachother
 
 ```
 main/
-├── bsp/                    # Hardware drivers (e.g., ADC light sensor)
+├── bsp/                    # Hardware drivers (e.g., ADC light sensor, UART, Wi-Fi)
 │   ├── light_sensor_driver.c/h
+│   ├── uart_handler.c/h
+│   └── wifi_manager.c/h
 │
-├── https_client/          # HTTPS POST module
-│   ├── https_post.c/h
+├── net/                   # Networking-related modules
+│   └── https_post.c/h
 │
-├── service/               # Runtime service modules
-│   ├── data_reporter.c/h          # Collect + upload data
-│   ├── light_sensor_service.c/h   # Manage light sensor logic + caching
-│   ├── uart_handler.c/h           # UART handling
-│   ├── ble_service.c/h            # BLE GATT service logic
+├── OTA/                   # OTA update module
+│   └── https_ota_service.c/h
 │
-├── utils/                 # Utility modules
-│   ├── json_utils.c/h             # Build JSON payload
+├── service/               # Runtime logic modules (FreeRTOS tasks)
+│   ├── data_reporter.c/h
+│   ├── light_sensor_service.c/h
+│   ├── uart_service.c/h
+│   ├── ble_service.c/h
+│   └── wifi_service.c/h
 │
-├── wifi_manager.c/h       # Wi-Fi connection logic
-├── main.c                 # Top-level startup entry
-├── log_wrapper.h          # Optional logging macro
-├── README.md              # You're reading it!
+├── utils/                 # Utility functions
+│   ├── json_utils.c/h
+│   └── ble_format_utils.c/h
+│
+├── main.c                 # Entry point: system startup, task scheduler
+├── CMakeLists.txt
+└── README.md
 ```
 
 ---
@@ -108,6 +115,27 @@ Update your SSID and password in `data_reporter.c`:
 - Enable **Notify**
 - You will receive 4-byte little-endian integer (e.g., light = `0x0802 = 520`)
 
+### OTA Update Test
+
+Workflow:
+Firmware boots and connects to Wi-Fi
+
+ota_test_task starts counting to 30
+
+After 30s, it performs OTA via HTTPS:
+
+```c
+https://<your_server_ip>:8443/firmware.bin 
+```
+
+To test OTA, build a new firmware version, host it on your server, and let the device auto-update.
+
+For complete OTA server setup instructions, refer to:
+
+```c
+/server/README_SERVER.md
+```
+
 ---
 
 ##  JSON Upload Format
@@ -145,8 +173,8 @@ You can modify `json_utils.c` to use field-style format instead:
 | GitHub repo + documentation     | ✅ Done        | Modular code + diagram                 |
 | **BLE GATT notification**       | ✅ Done        | Sends int light value every 3 seconds  |
 | DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor      |
-| MQTT secure upload              | 🔜 Planned     | Add TLS MQTT broker support            |
-| OTA update integration          | ⏳ In Progress | Optional for remote firmware updates   |
+| MQTT secure upload              | ⏳ In Progress | Add TLS MQTT broker support            |
+| OTA update integration          | ✅ Done        | Optional for remote firmware updates   |
 
 ---
 
