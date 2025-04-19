@@ -48,7 +48,8 @@ main/
 │
 ├── main.c                 # Entry point: system startup, task scheduler
 ├── CMakeLists.txt
-└── README.md
+└── ../README.md           # You are reading it~
+
 ```
 
 ---

@@ -14,7 +14,7 @@ idf_component_register(
         service/ble_service.c
         OTA/https_ota_service.c
         
-    INCLUDE_DIRS "." "net" "bsp" "service" "utils" "OTA"
+    INCLUDE_DIRS "." "net" "bsp" "service" "utils" "OTA" "include"
 
     REQUIRES
         esp_https_ota
