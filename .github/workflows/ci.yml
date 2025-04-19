@@ -20,11 +20,14 @@ jobs:
     - name: Run BLE unit tests
       run: |
         cd test
-        gcc -Iunity/src -I../main/utils test_ble.c ../main/utils/ble_format_utils.c unity/src/unity.c -o test_ble
+        gcc -Iunity/src \
+            -I../components/utils/include \
+            ../components/utils/src/ble_format_utils.c \
+            unity/src/unity.c \
+            test_ble.c \
+            -o test_ble
         ./test_ble
 
+    # Optional: placeholder for other tests
     - name: Discover and run all tests
-      run: |
-       # cd test 
-       # make test  
-
+      run: echo "Additional tests go here"

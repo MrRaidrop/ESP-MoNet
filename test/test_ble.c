@@ -1,5 +1,5 @@
 #include "unity.h"
-#include "ble_format_utils.h"
+#include "utils/ble_format_utils.h"
 
 void setUp(void) {}
 void tearDown(void) {}
