@@ -20,8 +20,8 @@
 
 #include "sdkconfig.h"
 
-#include "light_sensor_service.h"
-#include "ble_format_utils.h"
+#include "service/light_sensor_service.h"
+#include "utils/ble_format_utils.h"
 
 
 #define GATTS_TAG "GATTS_DEMO"

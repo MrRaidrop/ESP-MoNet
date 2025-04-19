@@ -1,8 +1,9 @@
-#include "light_sensor_service.h"
-#include "light_sensor_driver.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_log.h>
+
+#include "bsp/light_sensor_driver.h"
+#include "service/light_sensor_service.h"
 
 #define TAG "LIGHT_SENSOR"
 #define LIGHT_SENSOR_TASK_STACK_SIZE 2048

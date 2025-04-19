@@ -1,10 +1,13 @@
-﻿#
-# CMakeLists.txt for component: net
-#
-
-idf_component_register(
+﻿idf_component_register(
     SRCS
-        # src/example.c
+        src/https_post.c
     INCLUDE_DIRS "include"
-    # REQUIRES  driver nvs_flash  ...
+    REQUIRES
+        esp_http_client
+        esp-tls
+        esp_wifi
+        esp_netif
+        nvs_flash
+    PRIV_REQUIRES
+        utils               # for json utils
 )

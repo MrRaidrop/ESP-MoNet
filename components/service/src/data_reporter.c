@@ -4,9 +4,9 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
-#include "light_sensor_service.h"   // for light_sensor_get_cached_value()
-#include "json_utils.h"            // for build_json_payload()
-#include "https_post.h"            // for http_post_json()
+#include "service/light_sensor_service.h"   // for light_sensor_get_cached_value()
+#include "utils/json_utils.h"            // for build_json_payload()
+#include "net/https_post.h"            // for http_post_json()
 
 
 #define TAG "data_reporter"

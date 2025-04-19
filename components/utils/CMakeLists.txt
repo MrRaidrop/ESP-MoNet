@@ -1,10 +1,7 @@
-﻿#
-# CMakeLists.txt for component: utils
-#
-
-idf_component_register(
+﻿idf_component_register(
     SRCS
-        # src/example.c
+        src/json_utils.c
+        src/ble_format_utils.c
     INCLUDE_DIRS "include"
-    # REQUIRES  driver nvs_flash  ...
+    # pure C API，no out dependency
 )

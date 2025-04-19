@@ -1,8 +1,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
-#include "wifi_manager.h"
-#include "wifi_service.h"
+#include "bsp/wifi_manager.h"
+#include "service/wifi_service.h"
 
 
 

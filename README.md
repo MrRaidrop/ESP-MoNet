@@ -14,7 +14,7 @@ how modules interact with eachother
 -  Data reporter module with 5-second upload loop
 -  UART echo for sensor debugging
 -  BLE GATT Server: Notify mobile device with sensor data (e.g., light value)**
--  Modular source structure for scalability
+-  **Component‑based source layout (ESP‑IDF components/)**
 -  **Over-the-air (OTA) firmware update based on wifi** (30s after boot, you can change when you want to ota)
 -  Future-ready for MQTT integration
 
@@ -23,32 +23,30 @@ how modules interact with eachother
 ##  Project Structure
 
 ```
-main/
-├── bsp/                    # Hardware drivers (e.g., ADC light sensor, UART, Wi-Fi)
-│   ├── light_sensor_driver.c/h
-│   ├── uart_handler.c/h
-│   └── wifi_manager.c/h
+project-root
+├── components/
+│   ├── bsp/                 # Hardware drivers (Wi‑Fi, UART, ADC light sensor)
+│   │   ├── include/bsp/*.h
+│   │   └── src/*.c
+│   ├── net/                 # Networking sub‑system (HTTPS POST, future MQTT)
+│   │   ├── include/net/*.h
+│   │   └── src/https_post.c
+│   ├── OTA/                 # Wi‑Fi OTA service
+│   │   ├── include/OTA/*.h
+│   │   └── src/https_ota_service.c
+│   ├── service/             # Runtime logic (FreeRTOS tasks)
+│   │   ├── include/service/*.h
+│   │   └── src/*.c          # ble_service.c, data_reporter.c, ...
+│   └── utils/               # Helper utilities
+│       ├── include/utils/*.h
+│       └── src/*.c          # json_utils.c, ble_format_utils.c
 │
-├── net/                   # Networking-related modules
-│   └── https_post.c/h
+├── main/                    # Application entry
+│   ├── main.c
+│   └── CMakeLists.txt
 │
-├── OTA/                   # OTA update module
-│   └── https_ota_service.c/h
-│
-├── service/               # Runtime logic modules (FreeRTOS tasks)
-│   ├── data_reporter.c/h
-│   ├── light_sensor_service.c/h
-│   ├── uart_service.c/h
-│   ├── ble_service.c/h
-│   └── wifi_service.c/h
-│
-├── utils/                 # Utility functions
-│   ├── json_utils.c/h
-│   └── ble_format_utils.c/h
-│
-├── main.c                 # Entry point: system startup, task scheduler
-├── CMakeLists.txt
-└── ../README.md           # You are reading it~
+├── README.md  (you are reading~)
+└── .github/workflows/ci.yml # GitHub Actions: build & unit‑test BLE module
 
 ```
 
@@ -101,12 +99,13 @@ idf.py -p /dev/ttyUSB0 flash monitor
 
 ### 3. Wi-Fi Configuration
 
-Update your SSID and password in `data_reporter.c`:
+Update your SSID and password in `main/main.c`:
 
 ```c
 #define WIFI_SSID "your-ssid"
 #define WIFI_PASS "your-password"
 ```
+It will be pass to `service/src/wifi_service.c`
 
 ### 4. BLE Verification
 
@@ -195,5 +194,5 @@ MIT License — Use freely, modify, and integrate.
 
 ---
 
-🛠️ Last Updated: April 11, 2025  
+🛠️ Last Updated: April 19, 2025  
 Made with ❤️ by [Greyson Yu](https://github.com/MrRaidrop)

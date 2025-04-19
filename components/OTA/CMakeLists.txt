@@ -1,10 +1,15 @@
-﻿#
-# CMakeLists.txt for component: OTA
-#
-
-idf_component_register(
+﻿idf_component_register(
     SRCS
-        # src/example.c
+        src/https_ota_service.c
     INCLUDE_DIRS "include"
-    # REQUIRES  driver nvs_flash  ...
+    REQUIRES
+        esp_https_ota
+        app_update
+        esp_http_client
+        esp-tls
+        esp_wifi
+        esp_netif
+        nvs_flash
+    PRIV_REQUIRES
+        utils
 )

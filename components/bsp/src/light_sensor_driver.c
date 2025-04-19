@@ -1,4 +1,4 @@
-#include "light_sensor_driver.h"
+#include "bsp/light_sensor_driver.h"
 
 static adc1_channel_t light_adc_channel;
 

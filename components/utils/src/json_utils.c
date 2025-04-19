@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "json_utils.h"
+#include "utils/json_utils.h"
 
 char *build_json_payload(const char *uart_data, int *counter)
 {

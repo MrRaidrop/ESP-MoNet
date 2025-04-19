@@ -7,10 +7,10 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#include "log_wrapper.h"
-#include "uart_handler.h"
-#include "uart_service.h"
-#include "light_sensor_service.h"
+#include "utils/log_wrapper.h"
+#include "bsp/uart_handler.h"
+#include "service/uart_service.h"
+#include "service/light_sensor_service.h"
 
 static void uart_light_send_task(void *pvParameters)
 {

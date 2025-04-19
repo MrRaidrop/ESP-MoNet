@@ -7,8 +7,8 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#include "log_wrapper.h"
-#include "uart_handler.h"
+#include "utils/log_wrapper.h"
+#include "bsp/uart_handler.h"
 
 static QueueHandle_t uart_queue;
 

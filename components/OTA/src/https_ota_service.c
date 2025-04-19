@@ -1,11 +1,11 @@
 #include "esp_log.h"
-#include "https_ota_service.h"
 #include "esp_https_ota.h"
 #include "esp_ota_ops.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "OTA/https_ota_service.h"
 
 #define OTA_URL "https://40.233.83.32:8443/firmware.bin"
 #define TAG "OTA_SERVICE"
