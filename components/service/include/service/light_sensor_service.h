@@ -1,13 +1,29 @@
-#pragma once
+#ifndef LIGHT_SENSOR_SERVICE_H_
+#define LIGHT_SENSOR_SERVICE_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// 启动光敏任务服务（自动创建 FreeRTOS 任务）
+/**
+ * @brief Start the light sensor service.
+ *
+ * This function initializes the ADC channel for the light sensor
+ * and creates a FreeRTOS task to periodically read sensor values.
+ */
 void light_sensor_service_start(void);
-int light_sensor_get_cached_value(void);  // 供其他模块调用获取最新光照值
+
+/**
+ * @brief Get the latest cached light sensor value.
+ *
+ * The value is updated every 500ms by the service task.
+ *
+ * @return Raw ADC value (0 ~ 4095).
+ */
+int light_sensor_get_cached_value(void);
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif // LIGHT_SENSOR_SERVICE_H_

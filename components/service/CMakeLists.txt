@@ -7,7 +7,9 @@
         src/ble_service.c
     INCLUDE_DIRS "include"
     REQUIRES
-        bsp                 
+        bsp
+        config
+        hal                 
         net
         OTA
         utils

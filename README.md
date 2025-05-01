@@ -180,6 +180,23 @@ You can modify `json_utils.c` to use field-style format instead:
 
 ---
 
+## Known Limitations & Improvement Plan
+
+| Category       | Issue Description                                 | Improvement Direction                                | Status        |
+|----------------|----------------------------------------------------|------------------------------------------------------|---------------|
+| Architecture   | Tight coupling between modules; no service manager | Introduce centralized `service_registry` and `app_init` | 🔜 Planned     |
+| Config System  | Configs hardcoded in `.c` files                    | Use `Kconfig` + optional NVS runtime override         | 🔜 Planned     |
+| Logging        | No module-level control over log output            | Use `LOG_MODULE_REGISTER` per component, add log levels | ⏳ In Progress       |
+| Unit Testing   | Only `ble_format_utils` has CI test                | Add tests for `json_utils`, services, add mocks + coverage | ⏳ In Progress |
+| HTTPS Security | TLS certificate not verified by default            | Add CA cert config toggle, validate server cert       | 🔜 Planned     |
+| OTA Mechanism  | No OTA signature validation or rollback mechanism  | Add SHA256 check + dual partition fallback            | 🔜 Planned     |
+| BLE Extension  | Only 1 notify characteristic, no write command     | Extend GATT profile, support control commands         | ⏳ In Progress |
+
+
+> Want to contribute or suggest improvements? Feel free to [open an issue](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/issues) or fork this repo!
+
+
+---
 ##  Example Use Cases
 
 - Low-power sensor node with cloud logging
