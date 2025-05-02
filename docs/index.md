@@ -1,6 +1,6 @@
 ---
 layout: default
-title: 项目结构图
+title: System Architecture
 ---
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -8,7 +8,7 @@ title: 项目结构图
   mermaid.initialize({ startOnLoad: true });
 </script>
 
-<h2>系统架构图</h2>
+<h2>System Architecture</h2>
 
 <div class="mermaid">
 graph TD
