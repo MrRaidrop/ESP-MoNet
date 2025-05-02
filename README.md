@@ -1,5 +1,5 @@
 # 🌐 ESP32 Modular IoT Framework 
-[CN 中文版本](README.zh-CN.md)
+[🇨🇳 中文版本 README.zh-CN.md](README.zh-CN.md) | [🇺🇸 English Version README.md](README.md)
 
 A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and **BLE GATT-based communication**. Future support for MQTT is also planned.
 
@@ -60,19 +60,20 @@ project-root
 
 ##  Current Architecture
 
-```
+```mermaid
 graph TD
-    SENSOR[Light Sensor (ADC)]
-    LIGHT[light_sensor_service.c]
-    BUS[Message Bus (msg_bus)]
-    UPLOADER[data_uploader_service.c]
-    UART[UART Service]
-    BLE[BLE Service]
-    CACHE[Cache System]
-    JSON[json_utils.c]
-    HTTP[http_post_hal.c]
-    CLOUD[Cloud Server]
-    MOBILE[nRF Connect / App]
+    SENSOR["Light Sensor (ADC)"]
+    LIGHT["light_sensor_service.c"]
+    BUS["Message Bus (msg_bus)"]
+    UPLOADER["data_uploader_service.c"]
+    UART["UART Service"]
+    BLE["BLE Service"]
+    CACHE["Cache System"]
+    JSON["json_utils.c"]
+    HTTP["http_post_hal.c"]
+    CLOUD["Cloud Server"]
+    MOBILE["nRF Connect / App"]
+    PC["PC Terminal"]
 
     SENSOR --> LIGHT
     LIGHT --> BUS
@@ -86,6 +87,7 @@ graph TD
     CACHE --> UPLOADER
     BLE --> MOBILE
     UART --> PC
+
 
 ```
 
