@@ -1,5 +1,5 @@
 // hal/src/adc_hal.c
-#include "hal/adc_hal.h"
+#include "my_hal/adc_hal.h"
 #include "driver/adc.h"
 #include "esp_log.h"
 #include "utils/log.h"

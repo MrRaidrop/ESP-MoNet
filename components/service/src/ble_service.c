@@ -8,6 +8,7 @@
 #include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_log.h"
+#include "utils/log.h"
 #include "nvs_flash.h"
 #include "esp_bt.h"
 
@@ -24,12 +25,11 @@
 #include "utils/ble_format_utils.h"
 
 
-#define GATTS_TAG "GATTS_DEMO"
+#define GATTS_TAG "BLE_GATTS"
 
 ///Declare the static function
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
-extern int light_sensor_get_cached_value(void);
 extern void ble_format_notify_data(int value, uint8_t *out);
 #define GATTS_SERVICE_UUID_TEST_A   0x00FF
 #define GATTS_CHAR_UUID_TEST_A      0xFF01
@@ -174,7 +174,7 @@ typedef struct {
 
 static prepare_type_env_t a_prepare_write_env;
 static prepare_type_env_t b_prepare_write_env;
-static void ble_notify_task(void *arg);
+//static void ble_notify_task(void *arg);
 
 void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
 void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
@@ -481,7 +481,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         gl_profile_tab[PROFILE_A_APP_ID].conn_id = param->connect.conn_id;
         //start sent the update connection parameters to the peer device.
         esp_ble_gap_update_conn_params(&conn_params);
-        xTaskCreate(ble_notify_task, "ble_notify_task", 2048, NULL, 5, NULL); // let's fucking go!!!!!!!
+        //xTaskCreate(ble_notify_task, "ble_notify_task", 2048, NULL, 5, NULL); // let's fucking go!!!!!!!
         break;
     }
     case ESP_GATTS_DISCONNECT_EVT:
@@ -745,28 +745,59 @@ static void ble_service_task(void *arg) {
     vTaskDelete(NULL); // BLE 初始化完成后，删除任务
 }
 
-static void ble_notify_task(void *arg) {
-    while (1) {
-        if (gl_profile_tab[PROFILE_A_APP_ID].gatts_if != ESP_GATT_IF_NONE &&
-            gl_profile_tab[PROFILE_A_APP_ID].conn_id != 0xFFFF &&
-            gl_profile_tab[PROFILE_A_APP_ID].char_handle != 0) {
+// Changed into using msg_bus to notify
+// static void ble_notify_task(void *arg) {
+//     while (1) {
+//         if (gl_profile_tab[PROFILE_A_APP_ID].gatts_if != ESP_GATT_IF_NONE &&
+//             gl_profile_tab[PROFILE_A_APP_ID].conn_id != 0xFFFF &&
+//             gl_profile_tab[PROFILE_A_APP_ID].char_handle != 0) {
             
-            int value = light_sensor_get_cached_value();
-            uint8_t data[4];
-            ble_format_notify_data(value, data);
+//             int value = light_sensor_get_cached_value();
+//             uint8_t data[4];
+//             ble_format_notify_data(value, data);
 
-            esp_ble_gatts_send_indicate(
-                gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
-                gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                gl_profile_tab[PROFILE_A_APP_ID].char_handle,
-                sizeof(data),
-                data,
-                false
-            );
-        }
+//             esp_ble_gatts_send_indicate(
+//                 gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
+//                 gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+//                 gl_profile_tab[PROFILE_A_APP_ID].char_handle,
+//                 sizeof(data),
+//                 data,
+//                 false
+//             );
+//         }
 
-        vTaskDelay(pdMS_TO_TICKS(3000));  // 每 3 秒发送一次
+//         vTaskDelay(pdMS_TO_TICKS(3000));  // 每 3 秒发送一次
+//     }
+// }
+
+static inline bool _profile_ready(void)
+{
+    return  gl_profile_tab[PROFILE_A_APP_ID].gatts_if != ESP_GATT_IF_NONE &&
+            gl_profile_tab[PROFILE_A_APP_ID].conn_id   != 0xFFFF           &&
+            gl_profile_tab[PROFILE_A_APP_ID].char_handle != 0;
+}
+
+bool ble_service_is_connected(void)
+{
+    return _profile_ready();
+}
+
+bool ble_service_notify_raw(const uint8_t *data, size_t len)
+{
+    if (!_profile_ready()) {
+        ESP_LOGW("BLE_NOTIFY", "BLE profile not ready");
+        return false;
     }
+
+    esp_err_t err = esp_ble_gatts_send_indicate(
+        gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
+        gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+        gl_profile_tab[PROFILE_A_APP_ID].char_handle,
+        len,
+        (uint8_t *)data,
+        false /* need_confirm = false */
+    );
+    return err == ESP_OK;
 }
 
 

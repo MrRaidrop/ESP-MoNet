@@ -11,8 +11,6 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 
-#include "bsp/uart_handler.h"
-#include "bsp/wifi_manager.h"
 #include "utils/json_utils.h"
 #include "utils/log_wrapper.h"
 #include "net/https_post.h"
@@ -22,6 +20,7 @@
 #include "service/wifi_service.h"
 #include "service/uart_service.h"
 #include "ota/https_ota_service.h" 
+#include "service/data_uploader_service.h"
 
 #define TAG "MAIN"
 
@@ -67,10 +66,11 @@ void app_main(void)
     }
 
     light_sensor_service_start();
-    uart_service_start();
+    ble_service_start();
+    //uart_service_start();
     //data_reporter_start();
     vTaskDelay(pdMS_TO_TICKS(500));
-    ble_service_start();
+    data_uploader_service_start();
 
-    xTaskCreate(&ota_test_task, "ota_test_task", 4096, NULL, 5, NULL);
+    //xTaskCreate(&ota_test_task, "ota_test_task", 4096, NULL, 5, NULL);
 }

@@ -3,7 +3,8 @@
 #define LOG_H_
 
 #include "esp_log.h"
-#include "config.h"
+#include "utils/config.h"
+#include <inttypes.h>
 
 #if CONFIG_LOG_ENABLE
 #define LOGI(tag, fmt, ...) ESP_LOGI(tag, fmt, ##__VA_ARGS__)

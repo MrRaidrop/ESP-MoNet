@@ -1,13 +1,12 @@
-// wifi_manager.c
 #include <string.h>
 #include <stdio.h>        
 #include <stdarg.h>
 
 #include "esp_wifi.h"
 #include "esp_event.h"
-#include "esp_log.h"
+#include "utils/log.h"
 #include "esp_netif.h"
-#include "bsp/wifi_manager.h"
+#include "my_hal/wifi_hal.h"
 
    
 
@@ -27,15 +26,15 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
         if (retry_num < MAX_RETRY) {
             esp_wifi_connect();
             retry_num++;
-            ESP_LOGI(TAG, "Retrying WiFi...");
+            LOGI(TAG, "Retrying WiFi...");
         } else {
             xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-            ESP_LOGE(TAG, "Failed to connect to Wi-Fi after %d retries.", MAX_RETRY);
+            LOGE(TAG, "Failed to connect to Wi-Fi after %d retries.", MAX_RETRY);
         }
     } 
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "Got IP:" IPSTR, IP2STR(&event->ip_info.ip));
+        LOGI(TAG, "Got IP:" IPSTR, IP2STR(&event->ip_info.ip));
         retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
@@ -61,7 +60,7 @@ EventGroupHandle_t wifi_init_sta(const char *ssid, const char *password) {
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     esp_wifi_start();
 
-    ESP_LOGI(TAG, "Wi-Fi init finished");
+    LOGI(TAG, "Wi-Fi init finished");
 
     return s_wifi_event_group;
 }

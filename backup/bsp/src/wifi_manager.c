@@ -6,7 +6,7 @@
 #include "esp_event.h"
 #include "utils/log.h"
 #include "esp_netif.h"
-#include "hal/wifi_hal.h"
+#include "bsp/wifi_manager.h"
 
    
 

@@ -1,9 +1,12 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <esp_log.h>
 
 #include "service/light_sensor_service.h"
-#include "hal/adc_hal.h"
-#include "config/config.h"
+#include "my_hal/adc_hal.h"
+#include "utils/config.h"
+#include "utils/log.h"
+#include "core/msg_bus.h"
 
 #define TAG "LIGHT_SENSOR"
 #define LIGHT_SENSOR_TASK_STACK_SIZE 2048
@@ -23,6 +26,15 @@ static void light_sensor_task(void *pvParameters)
         latest_light_value = adc_hal_read(CONFIG_LIGHT_SENSOR_CHANNEL);
         LOGI(TAG, "Raw ADC: %d", latest_light_value);
 
+        // Publish to message bus
+        msg_t msg = {
+            .topic = EVENT_SENSOR_LIGHT,
+            .ts_ms = esp_log_timestamp(),
+            .data.value_int = latest_light_value
+        };
+        msg_bus_publish(&msg);
+
+        // Optional: local threshold log
         if (latest_light_value > LIGHT_SENSOR_THRESHOLD) {
             LOGW(TAG, "🌑 Dark or covered");
         } else {
@@ -35,7 +47,7 @@ static void light_sensor_task(void *pvParameters)
 void light_sensor_service_start(void)
 {
     adc_hal_init(CONFIG_LIGHT_SENSOR_CHANNEL);
-    LOGI(TAG, "Driver initialized on channel %d", LIGHT_SENSOR_ADC_CHANNEL);
+    LOGI(TAG, "Driver initialized on channel %d", CONFIG_LIGHT_SENSOR_CHANNEL);
     xTaskCreate(light_sensor_task, "light_sensor_task",
                 LIGHT_SENSOR_TASK_STACK_SIZE, NULL,
                 LIGHT_SENSOR_TASK_PRIORITY, NULL);

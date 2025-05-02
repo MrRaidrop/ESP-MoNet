@@ -15,6 +15,17 @@ extern "C" {
 void wifi_service_start(const char *ssid, const char *password);
 
 /**
+ * @brief Check whether Wi-Fi is currently connected.
+ *
+ * This is a non-blocking version of wifi_service_wait_connected().
+ * It reads the event group bit directly without waiting.
+ *
+ * @return true if connected to Wi-Fi (WIFI_CONNECTED_BIT is set)
+ * @return false if not connected
+ */
+bool wifi_service_is_connected(void);
+
+/**
  * @brief Block until Wi-Fi connection is established or timeout occurs.
  *
  * @return true if connected, false on failure or timeout

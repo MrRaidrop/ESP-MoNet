@@ -1,32 +1,64 @@
-// uart_handler.c
-#include <string.h>
-#include <stdlib.h>
-#include "driver/uart.h"
-#include "driver/gpio.h"
+// components/service/src/uart_service.c
+#include "service/uart_service.h"
+#include "my_hal/uart_hal.h"
+#include "core/msg_bus.h"
+#include "utils/log.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/queue.h"
 
-#include "utils/log_wrapper.h"
-#include "bsp/uart_handler.h"
-#include "service/uart_service.h"
-#include "service/light_sensor_service.h"
+#define TAG "UART_SERVICE"
+#define UART_QUEUE_DEPTH 8
 
-static void uart_light_send_task(void *pvParameters)
+/**
+ * @brief Task to forward light sensor values to UART via msg_bus subscription.
+ */
+static void uart_send_task(void *arg)
 {
-    ESP_LOGI(TAG, "UART light send task started");
+    QueueHandle_t q = xQueueCreate(UART_QUEUE_DEPTH, sizeof(msg_t));
+    if (!msg_bus_subscribe(EVENT_SENSOR_LIGHT, q)) {
+        LOGE(TAG, "Failed to subscribe to light sensor topic");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    msg_t msg;
     while (1) {
-        int val = light_sensor_get_cached_value();
-        char msg[64];
-        snprintf(msg, sizeof(msg), "Light ADC: %d", val);
-        uart_write_string(msg);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        if (xQueueReceive(q, &msg, portMAX_DELAY)) {
+            char buf[64];
+            snprintf(buf, sizeof(buf), "Light ADC: %" PRId32, msg.data.value_int);
+            my_uart_hal_write_string(buf);
+        }
+    }
+}
+
+/**
+ * @brief Task to receive UART input and publish as msg_bus EVENT_SENSOR_UART.
+ */
+static void uart_receive_task(void *arg)
+{
+    QueueHandle_t rx = my_uart_hal_get_rx_queue();
+    char *line;
+    while (1) {
+        if (xQueueReceive(rx, &line, portMAX_DELAY) == pdTRUE) {
+            msg_t msg = {
+                .topic = EVENT_SENSOR_UART,
+                .ts_ms = esp_log_timestamp()
+            };
+            strncpy(msg.data.uart_text.str, line, sizeof(msg.data.uart_text.str) - 1);
+            msg.data.uart_text.str[sizeof(msg.data.uart_text.str) - 1] = '\0';
+
+            msg_bus_publish(&msg);
+            LOGI(TAG, "[RX] %s → published", line);
+            free(line);
+        }
     }
 }
 
 void uart_service_start(void)
 {
-    uart_init();
-    xTaskCreate(uart_light_send_task, "uart_light_send_task", 2048, NULL, 5, NULL);
-    ESP_LOGI("uart", "UART service started");
+    my_uart_hal_init();
+    xTaskCreate(uart_send_task, "uart_send_task", 2048, NULL, 5, NULL);
+    xTaskCreate(uart_receive_task, "uart_receive_task", 2048, NULL, 5, NULL);
+    LOGI(TAG, "UART service started");
 }

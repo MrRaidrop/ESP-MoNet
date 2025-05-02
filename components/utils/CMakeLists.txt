@@ -2,5 +2,6 @@
     SRCS
         src/json_utils.c
         src/ble_format_utils.c
+        src/cache.c
     INCLUDE_DIRS "include"
 )

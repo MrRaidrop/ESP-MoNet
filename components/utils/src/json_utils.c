@@ -2,8 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <inttypes.h>
 
 #include "utils/json_utils.h"
+
+void json_utils_build_light_sensor_json(char *out_buf, size_t buf_size, int light_val, uint32_t timestamp)
+{
+    snprintf(out_buf, buf_size,
+        "{ \"type\": \"light\", \"value\": %d, \"ts\": %" PRIu32 " }",
+        light_val, timestamp);
+}
 
 char *build_json_payload(const char *uart_data, int *counter)
 {

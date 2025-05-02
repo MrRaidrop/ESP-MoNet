@@ -5,11 +5,11 @@
         src/light_sensor_service.c
         src/uart_service.c
         src/ble_service.c
+        src/data_uploader_service.c
     INCLUDE_DIRS "include"
     REQUIRES
-        bsp
-        config
-        hal                 
+        core
+        my_hal                 
         net
         OTA
         utils
