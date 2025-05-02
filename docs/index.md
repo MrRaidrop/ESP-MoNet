@@ -1,11 +1,16 @@
 ---
 layout: default
-title: ESP32 Modular IoT Framework
+title: 项目结构图
 ---
 
-#  Structure graph
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true });
+</script>
 
-```mermaid
+<h2>系统架构图</h2>
+
+<div class="mermaid">
 graph TD
     SENSOR["Light Sensor (ADC)"]
     LIGHT["light_sensor_service.c"]
@@ -21,14 +26,14 @@ graph TD
     PC["PC Terminal"]
 
     SENSOR --> LIGHT
-    LIGHT --> BUS
-    BUS --> UPLOADER
-    BUS --> UART
-    BUS --> BLE
+    LIGHT  --> BUS
+    BUS    --> DATA_UPLOADER
+    BUS    --> UART
+    BUS    --> BLE
     UPLOADER --> JSON
-    JSON --> HTTP
-    HTTP --> CLOUD
-    UPLOADER --> CACHE
-    CACHE --> UPLOADER
-    BLE --> MOBILE
-    UART --> PC
+    JSON   --> HTTP
+    HTTP   --> CLOUD
+    UPLOADER <--> CACHE
+    BLE    --> MOBILE
+    UART   --> PC
+</div>
