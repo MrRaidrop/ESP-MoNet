@@ -19,6 +19,18 @@ extern "C" {
  */
 EventGroupHandle_t wifi_init_sta(const char* ssid, const char* password);
 
+/**
+ * @brief Get the current Wi-Fi RSSI (signal strength) in dBm.
+ *
+ * This function wraps esp_wifi_sta_get_ap_info() and returns the RSSI
+ * of the currently connected AP. It can be used to adapt system behavior
+ * based on signal quality (e.g., reduce image upload rate on weak Wi-Fi).
+ *
+ * @return RSSI in dBm (e.g., -50 to -100), or -100 if not connected or failed.
+ */
+int wifi_get_rssi(void);
+
+
 #ifdef __cplusplus
 }
 #endif

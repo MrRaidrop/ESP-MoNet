@@ -6,6 +6,8 @@
 #include "freertos/queue.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "my_hal/camera_hal.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,8 +23,11 @@ typedef enum {
     EVENT_SENSOR_LIGHT = 0,  ///< Light sensor data (ADC)
     EVENT_SENSOR_TEMP,       ///< Temperature + humidity sensor (e.g. DHTxx)
     EVENT_SENSOR_UART,       ///< Structured UART payload from external sensor
+    EVENT_SENSOR_JPEG,       ///< JPEG image captured from camera
     EVENT_SENSOR_MAX         ///< Sentinel value for bounds checking
 } msg_topic_t;
+
+#define MSG_JPEG_BUF_SIZE 32768  ///< Maximum size of JPEG buffer in bytes
 
 /**
  * @brief Message payload structure supporting multiple data types.
@@ -50,6 +55,16 @@ typedef struct {
         struct {
             uint8_t data[64];    ///< Raw binary payload (if needed in future)
         } raw;
+
+        struct {
+            float accel[3];
+            float gyro[3];
+        } imu;
+
+        struct {
+            camera_fb_t *fb;
+        } jpeg;
+        // This is definatily not enough for a full image, but we can add package splicing later.
     } data;
 
 } msg_t;

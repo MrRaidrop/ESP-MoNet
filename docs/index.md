@@ -14,11 +14,13 @@ title: System Architecture
 graph TD
     SENSOR["Light Sensor (ADC)"]
     LIGHT["light_sensor_service.c"]
+    CAMERA["camera_service.c<br><small>(Zero-copy JPEG)</small>"]
+    CAM_HAL["camera_hal.c"]
     BUS["Message Bus (msg_bus)"]
     UPLOADER["data_uploader_service.c"]
     UART["UART Service"]
     BLE["BLE Service"]
-    CACHE["Cache System"]
+    CACHE["Cache System<br><small>(Binary Ring Buffer)</small>"]
     JSON["json_utils.c"]
     HTTP["http_post_hal.c"]
     CLOUD["Cloud Server"]
@@ -27,13 +29,19 @@ graph TD
 
     SENSOR --> LIGHT
     LIGHT  --> BUS
-    BUS    --> DATA_UPLOADER
+    CAMERA --> BUS
+    CAM_HAL --> CAMERA
+    BUS    --> UPLOADER
     BUS    --> UART
     BUS    --> BLE
     UPLOADER --> JSON
     JSON   --> HTTP
     HTTP   --> CLOUD
-    UPLOADER <--> CACHE
     BLE    --> MOBILE
     UART   --> PC
+
+    %% Highlight JPEG path
+    CAMERA -.->|camera_fb_t*| UPLOADER
+    UPLOADER -->|on fail| CACHE
+    CACHE -->|retry when Wi-Fi OK| UPLOADER
 </div>

@@ -1,11 +1,14 @@
 // components/service/src/uart_service.c
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "service/uart_service.h"
 #include "my_hal/uart_hal.h"
 #include "core/msg_bus.h"
 #include "utils/log.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+
 
 #define TAG "UART_SERVICE"
 #define UART_QUEUE_DEPTH 8

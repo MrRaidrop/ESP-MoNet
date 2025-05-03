@@ -2,6 +2,10 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+// will be replaced to sys register later  
+#define CONFIG_UPLOAD_LIGHT_ENABLED 0
+#define CONFIG_UPLOAD_JPEG_ENABLED 1
+
 /**
  * @brief Light sensor channel, GPIO3
  */
@@ -10,9 +14,9 @@
 /**
  * @brief Cache size and retry period for upload
  */
-#define CONFIG_UPLOAD_CACHE_SIZE    20
-#define CONFIG_UPLOAD_CACHE_ITEM_SIZE 128
-#define CONFIG_UPLOAD_RETRY_PERIOD_MS 2000
+#define CONFIG_CACHE_MAX_ITEMS         20
+#define CONFIG_CACHE_ITEM_SIZE         128
+#define CONFIG_CACHE_FLUSH_INTERVAL_MS 2000
 
 /**
  * @brief Wi-Fi configuration
@@ -42,6 +46,19 @@
  */
 #define CONFIG_LOG_ENABLE        1
 #define CONFIG_LOG_LEVEL_DEFAULT ESP_LOG_INFO
+
+/**
+ * @brief Camera sending interval
+ */
+#define CONFIG_CAPTURE_INTERVAL_MS 5000  // 5 seconds
+
+/**
+ * @brief UART configuration
+ */
+#define UART_PORT         UART_NUM_2
+#define UART_TX_PIN       GPIO_NUM_1
+#define UART_RX_PIN       GPIO_NUM_2
+#define UART_BAUD_RATE    921600
 
 #endif /* CONFIG_H_ */
 

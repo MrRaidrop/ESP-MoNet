@@ -1,23 +1,53 @@
-# 🌐 ESP32 Modular IoT Framework 
+# 🌐 ESP32 Modular IoT Framework
+
 [🇨🇳 中文版本 README.zh-CN.md](README.zh-CN.md) | [🇺🇸 English Version README.md](README.md)
 
-A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, ADC-based light sensor (you can add whatever sensor you want), and **BLE GATT-based communication**. Future support for MQTT is also planned.
+A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, an ADC-based light sensor (you can easily add your own), and **BLE GATT-based communication**. Future support for MQTT is also planned.
+
+[How to Add a Sensor](https://mrraidrop.github.io/ESP-MoNet/#/how_to_add_sensor)
 
 [![BLE Module CI](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/actions/workflows/ci.yml/badge.svg)](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/actions)
-how modules interact with eachother
+
 ---
 
-##  Features
+## Why This Repo
 
--  Auto-reconnecting Wi-Fi connection manager
--  Periodic light sensor reading via ADC (because currently I only have light sensor T_T)
--  Secure HTTPS POST to cloud with JSON data
--  Data reporter module with 5-second upload loop
--  UART echo for sensor debugging
--  BLE GATT Server: Notify mobile device with sensor data (e.g., light value)**
--  **Component‑based source layout (ESP‑IDF components/)**
--  **Over-the-air (OTA) firmware update based on wifi** (30s after boot, you can change when you want to ota)
--  Future-ready for MQTT integration
+- ** Modular Architecture**  
+Clean separation into **HAL / Core / Service / Net** layers. Every module is plug-and-play—easy to remove, replace, or extend. Comes with a complete [sensor integration guide](https://mrraidrop.github.io/ESP-MoNet/#/how_to_add_sensor).
+
+- ** Event-Driven Message Bus**  
+Fully decoupled, many-to-many publish/subscribe architecture—more flexible than direct queues and ideal for scalable embedded design.
+
+- ** Secure OTA + HTTPS**  
+Out-of-the-box secure OTA update system, with future support for AWS IoT Jobs.
+
+- ** CI-Ready Testing**  
+Includes a BLE unit test example, and is designed for integration with `idf.py build` in CI pipelines.
+
+- ** Dual-Channel Upload**  
+Automatic failover between Wi‑Fi and BLE. RAM cache ensures no data loss during disconnections—frames are cached and retried seamlessly.
+
+- ** Bilingual Docs + Mermaid Diagrams**  
+English and Chinese documentation with rich Mermaid diagrams. Friendly for open-source contributors worldwide.
+
+---
+
+## Features
+
+- Auto-reconnecting Wi-Fi connection manager
+- Periodic light sensor readings via ADC  
+  *(currently only light sensor available—T_T)*
+- Secure HTTPS POST to cloud with JSON payloads
+- Data reporter with 5-second upload loop
+- UART echo for sensor debugging
+- BLE GATT Server: notifies mobile device with sensor data (e.g. light)
+- Component-based structure under `components/`
+- Over-the-Air (OTA) firmware update (starts 30s after boot by default)
+- **Camera (OV2640) JPEG capture + HTTP upload**
+- **Message Bus `EVENT_SENSOR_JPEG` for binary frames**
+- [Camera Module Overview](https://mrraidrop.github.io/ESP-MoNet/#/camera_index)  
+- [Camera Module Deep Dive](https://mrraidrop.github.io/ESP-MoNet/#/camera_module)
+- Future-ready: designed for MQTT integration
 
 ---
 

@@ -15,6 +15,15 @@ extern "C" {
  */
 bool http_post_send(const char* json_str);
 
+/**
+ * @brief Post a binary image to configured URL.
+ *
+ * @param data Pointer to the image data.
+ * @param len Length of the image data in bytes.
+ * @return true if post was successful, false otherwise.
+ */
+bool http_post_image(const uint8_t *data, size_t len);
+
 #ifdef __cplusplus
 }
 #endif

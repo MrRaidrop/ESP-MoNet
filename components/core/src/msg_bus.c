@@ -1,8 +1,8 @@
 // core/src/msg_bus.c
-#include "core/msg_bus.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "utils/log.h"
-
+#include "core/msg_bus.h"
 #define TAG "MSG_BUS"
 #define MAX_SUBSCRIBERS_PER_TOPIC 4
 

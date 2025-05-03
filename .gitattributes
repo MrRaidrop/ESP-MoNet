@@ -1,0 +1,18 @@
+# 强制所有文本文件使用 LF（Unix-style 换行）
+* text=auto eol=lf
+
+# 对于某些二进制文件禁用文本处理
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.bin binary
+*.ico binary
+*.pdf binary
+
+# 特殊：对 C/C++/头文件强制 LF
+*.c text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf

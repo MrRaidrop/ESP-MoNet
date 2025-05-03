@@ -1,10 +1,13 @@
 // components/hal/src/uart_hal.c
-#include "my_hal/uart_hal.h"
-#include "driver/uart.h"
-#include "driver/gpio.h"
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+
+#include "my_hal/uart_hal.h"
+#include "driver/uart.h"
+#include "driver/gpio.h"
+
 #include "utils/log.h"
 
 #define TAG "UART_HAL"
