@@ -1,4 +1,0 @@
-- [🏠 Home](index.md)
-- [📷 Camera Overview](camera_index.md)
-- [🧩 Camera Module Deep Dive](camera_module.md)
-- [🔌 How to Add a Sensor](how_to_add_sensor.md)
