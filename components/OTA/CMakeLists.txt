@@ -1,4 +1,4 @@
-﻿idf_component_register(
+idf_component_register(
     SRCS
         src/https_ota_service.c
     INCLUDE_DIRS "include"

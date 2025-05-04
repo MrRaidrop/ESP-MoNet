@@ -1,5 +1,5 @@
-// components/my_hal/src/camera_hal.c
-#include "my_hal/camera_hal.h"
+// components/monet_hal/src/camera_hal.c
+#include "monet_hal/camera_hal.h"
 #include "esp_camera.h"
 #include "utils/log.h"
 #include "utils/config.h"

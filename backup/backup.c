@@ -43,7 +43,7 @@ void uart_rx_task(void *pvParameters)
             data[len] = '\0';
             ESP_LOGI("UART", "Received: %s", data);
 
-            // 发到 queue（注意 copy）
+            // 发到 queue（注�?copy�?
             char *copy = strdup((char *)data);
             if (copy) {
                 xQueueSend(uart_queue, &copy, portMAX_DELAY);
@@ -53,7 +53,7 @@ void uart_rx_task(void *pvParameters)
 }
 
 
-// ===== 连接事件处理器 =====
+// ===== 连接事件处理�?=====
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
@@ -78,7 +78,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
-// ===== 初始化 WiFi =====
+// ===== 初始�?WiFi =====
 static void wifi_init_sta(void)
 {
     s_wifi_event_group = xEventGroupCreate();
@@ -117,7 +117,7 @@ char *build_json_payload(const char *uart_data, int *counter)
     char time_str[64];
     strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-    // 拼 JSON 字符串：{"esp32": "2025-04-07 16:58:30", "uart_data": "xxx", "hello": 12}
+    // �?JSON 字符串：{"esp32": "2025-04-07 16:58:30", "uart_data": "xxx", "hello": 12}
     snprintf(json_buf, sizeof(json_buf),
              "{\"esp32\": \"%s\", \"uart_data\": \"%s\", \"hello\": %d}",
              time_str, uart_data, *counter);
@@ -167,19 +167,19 @@ static void post_task(void *pvParameters)
     while (1) {
         vTaskDelay(delay_ticks);
 
-        // ⏬ 每次都发串口数据（向 PC）
+        // �?每次都发串口数据（向 PC�?
         uart_write_bytes(UART_NUM_0, (const char *)latest_data, strlen(latest_data));
         uart_write_bytes(UART_NUM_0, "\r\n", 2);  // 换行可读
 
-        // ⏬ 每次检查串口有没有新数据（非阻塞）
+        // �?每次检查串口有没有新数据（非阻塞）
         char *uart_data = NULL;
         if (xQueueReceive(uart_queue, &uart_data, 0)) {
             strncpy(latest_data, uart_data, sizeof(latest_data) - 1);
-            latest_data[sizeof(latest_data) - 1] = '\0';  // 确保结束符
+            latest_data[sizeof(latest_data) - 1] = '\0';  // 确保结束�?
             free(uart_data);  // 别忘释放
         }
 
-        // ⏬ POST 当前要发的数据
+        // �?POST 当前要发的数�?
         char *json = build_json_payload(latest_data, &post_counter);
         http_post_json(json);
     }
@@ -191,7 +191,7 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
     wifi_init_sta();
 
-    // 初始化 UART0（CDC）
+    // 初始�?UART0（CDC�?
     uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,

@@ -742,7 +742,7 @@ static void ble_service_task(void *arg) {
         ESP_LOGE(GATTS_TAG, "set local MTU failed, error code = %x", local_mtu_ret);
     }
 
-    vTaskDelete(NULL); // BLE 初始化完成后，删除任务
+    vTaskDelete(NULL); // BLE 初始化完成后，删除任�?
 }
 
 // Changed into using msg_bus to notify
@@ -766,7 +766,7 @@ static void ble_service_task(void *arg) {
 //             );
 //         }
 
-//         vTaskDelay(pdMS_TO_TICKS(3000));  // 每 3 秒发送一次
+//         vTaskDelay(pdMS_TO_TICKS(3000));  // �?3 秒发送一�?
 //     }
 // }
 

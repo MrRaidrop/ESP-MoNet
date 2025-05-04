@@ -6,10 +6,10 @@
  */
 #ifndef __OV7670_REG_REGS_H__
 #define __OV7670_REG_REGS_H__
-#define GAIN                    0x00 /* AGC â€“ Gain control gain setting  */
-#define BLUE                    0x01 /* AWB â€“ Blue channel gain setting  */
-#define RED                     0x02 /* AWB â€“ Red channel gain setting   */
-#define VREF                    0x03 /* AWB â€“ Green channel gain setting */
+#define GAIN                    0x00 /* AGC â€?Gain control gain setting  */
+#define BLUE                    0x01 /* AWB â€?Blue channel gain setting  */
+#define RED                     0x02 /* AWB â€?Red channel gain setting   */
+#define VREF                    0x03 /* AWB â€?Green channel gain setting */
 #define COM1			        0x04 /* Common Control 1 */
 #define BAVG                    0x05 /* U/B Average Level   */
 #define GAVG                    0x06 /* Y/Gb Average Level  */
@@ -122,8 +122,8 @@
 #define VSTART                  0x19  /* Vertical Frame (row) Start high 8-bit (low 2 bits are at VREF[1:0]) */
 #define VSTOP                   0x1A  /* Vertical Frame (row) End high 8-bit (low 2 bits are at VREF[3:2]) */
 #define PSHFT                   0x1B  /* Data Format - Pixel Delay Select */
-#define REG_MIDH                0x1C  /* Manufacturer ID Byte â€“ High */
-#define REG_MIDL                0x1D  /* Manufacturer ID Byte â€“ Low */
+#define REG_MIDH                0x1C  /* Manufacturer ID Byte â€?High */
+#define REG_MIDL                0x1D  /* Manufacturer ID Byte â€?Low */
 
 #define MVFP			        0x1E  /* Mirror/Vflip Enable */
 #define   MVFP_MIRROR	        0x20  /* Mirror image */

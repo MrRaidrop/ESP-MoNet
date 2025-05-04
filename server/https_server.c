@@ -101,7 +101,7 @@ void *client_handler(void *arg) {
         ERR_print_errors_fp(stderr);
     } else {
         printf("[Client Connected] Handling request...\n");
-        handle_request(ssl);  // 里面已经处理完 shutdown
+        handle_request(ssl);  // 里面已经处理�?shutdown
     }
 
     SSL_free(ssl);  // 释放 TLS 会话资源

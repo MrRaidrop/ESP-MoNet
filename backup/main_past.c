@@ -49,7 +49,7 @@ static void ble_notify_task(void *pvParameters)
 {
     while (1) {
         ble_service_notify_light_value();
-        vTaskDelay(pdMS_TO_TICKS(3000));  // 每 3 秒通知一次
+        vTaskDelay(pdMS_TO_TICKS(3000));  // �?3 秒通知一�?
     }
 }
 
@@ -64,13 +64,13 @@ void app_main(void)
     ble_service_start();  // 启动 BLE 栈和服务
 
     xTaskCreate(ble_notify_task,           // Task 函数
-                "ble_notify_task",         // 任务名
+                "ble_notify_task",         // 任务�?
                 2048,                      // 堆栈大小（可调）
                 NULL,                      // 参数
-                5,                         // 优先级
-                NULL);                     // 任务句柄（可为 NULL）
+                5,                         // 优先�?
+                NULL);                     // 任务句柄（可�?NULL�?
 
-    // 其他任务可继续创建...
+    // 其他任务可继续创�?..
 }
 #include <stdio.h>
 #include <string.h>

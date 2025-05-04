@@ -112,7 +112,7 @@ int main() {
         SSL_set_fd(ssl, client_fd);
 
         if (SSL_accept(ssl) <= 0) {
-            fprintf(stderr, "âŒ TLS handshake failed\n");
+            fprintf(stderr, "â?TLS handshake failed\n");
             ERR_print_errors_fp(stderr);
         } else {
             handle_request(ssl);

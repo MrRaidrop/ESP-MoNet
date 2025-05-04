@@ -3,10 +3,10 @@
 #include <esp_log.h>
 
 #include "service/light_sensor_service.h"
-#include "my_hal/adc_hal.h"
+#include "monet_hal/adc_hal.h"
 #include "utils/config.h"
 #include "utils/log.h"
-#include "core/msg_bus.h"
+#include "monet_core/msg_bus.h"
 
 #define TAG "LIGHT_SENSOR"
 #define LIGHT_SENSOR_TASK_STACK_SIZE 2048

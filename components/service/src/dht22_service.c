@@ -1,6 +1,6 @@
 #include "service/dht22_service.h"
-#include "my_hal/dht22_hal.h"
-#include "core/msg_bus.h"
+#include "monet_hal/dht22_hal.h"
+#include "monet_core/msg_bus.h"
 #include "utils/log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

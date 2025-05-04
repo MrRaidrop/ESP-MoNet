@@ -11,7 +11,7 @@
 #define TAG "OTA_SERVICE"
 
 /**
- * @brief OTA任务（独立线程中运行）
+ * @brief OTA任务（独立线程中运行�?
  */
 static void ota_task(void *param) {
     ESP_LOGI(TAG, "启动 OTA 更新任务...");
@@ -37,11 +37,11 @@ static void ota_task(void *param) {
         ESP_LOGE(TAG, "OTA failed: %s", esp_err_to_name(ret));
     }
 
-    vTaskDelete(NULL);  // 销毁任务
+    vTaskDelete(NULL);  // 销毁任�?
 }
 
 /**
- * @brief 启动 OTA 服务（建议从主程序中调用）
+ * @brief 启动 OTA 服务（建议从主程序中调用�?
  */
 void ota_service_start(void) {
     ESP_LOGI(TAG, "initialize OTA service...");

@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 project(test_ble_format)
 
-# 添加测试文件和待测模块
+# 添加测试文件和待测模�?
 add_executable(test_ble
     test_ble.c
     ../main/utils/ble_format_utils.c
 )
 
-# 添加头文件路径
+# 添加头文件路�?
 target_include_directories(test_ble PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ../main/utils

@@ -14,17 +14,17 @@ extern "C" {
 #define UART_BUF_SIZE      128
 
 /**
- * @brief 初始化 UART 硬件、创建队列和接收任务
+ * @brief 初始�?UART 硬件、创建队列和接收任务
  */
 void uart_init(void);
 
 /**
- * @brief 获取内部接收队列的句柄
+ * @brief 获取内部接收队列的句�?
  */
 QueueHandle_t uart_get_queue(void);
 
 /**
- * @brief 向串口写入一串字符串（会自动加 \r\n）
+ * @brief 向串口写入一串字符串（会自动�?\r\n�?
  */
 void uart_write_string(const char *str);
 

@@ -6,9 +6,9 @@ extern "C" {
 #endif
 
 /**
- * @brief 发送 JSON 到 HTTPS 服务器
+ * @brief 发�?JSON �?HTTPS 服务�?
  *
- * @param json 构建好的 JSON 字符串
+ * @param json 构建好的 JSON 字符�?
  */
 void http_post_json(const char *json);
 

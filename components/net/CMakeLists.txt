@@ -1,4 +1,4 @@
-﻿idf_component_register(
+idf_component_register(
     SRCS
         src/https_post.c
         src/https_post_hal.c

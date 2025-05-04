@@ -58,7 +58,7 @@ camera_fb_t *camera_hal_capture(void);
 #define CAM_PIN_HREF   7
 #define CAM_PIN_PCLK   13
 
-// JPEG QVGA (~8‑15 KB) is small enough for 5 s cadence
+// JPEG QVGA (~8�?5 KB) is small enough for 5 s cadence
 #define CAM_FRAME_SIZE   FRAMESIZE_QVGA
 #define CAM_JPEG_QUALITY 12
 #define CAM_FB_COUNT     2

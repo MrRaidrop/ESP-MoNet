@@ -4,7 +4,7 @@
 
 // will be replaced to sys register later  
 #define CONFIG_UPLOAD_LIGHT_ENABLED 0
-#define CONFIG_UPLOAD_JPEG_ENABLED 1
+#define CONFIG_UPLOAD_JPEG_ENABLED  1
 
 /**
  * @brief Light sensor channel, GPIO3

@@ -4,8 +4,8 @@
 #include "freertos/task.h"
 
 #include "service/uart_service.h"
-#include "my_hal/uart_hal.h"
-#include "core/msg_bus.h"
+#include "monet_hal/uart_hal.h"
+#include "monet_core/msg_bus.h"
 #include "utils/log.h"
 
 
@@ -52,7 +52,7 @@ static void uart_receive_task(void *arg)
             msg.data.uart_text.str[sizeof(msg.data.uart_text.str) - 1] = '\0';
 
             msg_bus_publish(&msg);
-            LOGI(TAG, "[RX] %s â†’ published", line);
+            LOGI(TAG, "[RX] %s â†?published", line);
             free(line);
         }
     }

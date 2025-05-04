@@ -1,4 +1,4 @@
-#include "my_hal/dht22_hal.h"
+#include "monet_hal/dht22_hal.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 

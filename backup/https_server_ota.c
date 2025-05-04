@@ -113,30 +113,30 @@ void *client_handler(void *arg) {
 void handle_request(SSL *ssl) {
     char buf[4096] = {0};
 
-    // ✅ 只读一次请求头，防止 curl 卡死
+    // �?只读一次请求头，防�?curl 卡死
     int len = SSL_read(ssl, buf, sizeof(buf) - 1);
     if (len <= 0) {
-        fprintf(stderr, "❌ SSL_read failed or client closed early\n");
+        fprintf(stderr, "�?SSL_read failed or client closed early\n");
         return;
     }
     buf[len] = '\0';
 
     printf("📥 Received request:\n%s\n", buf);
 
-    // ✅ 只解析首行
+    // �?只解析首�?
     char method[16], path[256];
     if (sscanf(buf, "%15s %255s", method, path) != 2) {
-        fprintf(stderr, "❌ Failed to parse request line\n");
+        fprintf(stderr, "�?Failed to parse request line\n");
         return;
     }
 
     printf("➡️  Method: %s | Path: %s\n", method, path);
 
-    // ✅ /firmware.bin 直接返回二进制
+    // �?/firmware.bin 直接返回二进�?
     if (strcmp(method, "GET") == 0 && strncmp(path, "/firmware.bin", 13) == 0) {
         FILE *fp = fopen("firmware.bin", "rb");
         if (!fp) {
-            perror("❌ Failed to open firmware.bin");
+            perror("�?Failed to open firmware.bin");
             const char *notfound = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
             SSL_write(ssl, notfound, strlen(notfound));
             return;
@@ -147,7 +147,7 @@ void handle_request(SSL *ssl) {
         long filesize = st.st_size;
         long range_start = 0, range_end = filesize - 1;
 
-        // ✅ 断点续传 Range 支持（可选）
+        // �?断点续传 Range 支持（可选）
         char *range_hdr = strstr(buf, "Range: bytes=");
         if (range_hdr) {
             sscanf(range_hdr, "Range: bytes=%ld-", &range_start);
@@ -191,11 +191,11 @@ void handle_request(SSL *ssl) {
         }
 
         fclose(fp);
-        printf("✅ Sent firmware.bin: %ld bytes\n", sent);
-        return;  // ✅ VERY IMPORTANT! 防止继续执行 JSON 逻辑
+        printf("�?Sent firmware.bin: %ld bytes\n", sent);
+        return;  // �?VERY IMPORTANT! 防止继续执行 JSON 逻辑
     }
 
-    // ✅ 其他逻辑：返回 JSON
+    // �?其他逻辑：返�?JSON
     char body[1024] = {0};
     const char *res_hdr = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nConnection: close\r\n\r\n";
 
@@ -233,7 +233,7 @@ void handle_request(SSL *ssl) {
         snprintf(body, sizeof(body), "{\"error\": \"invalid route\"}");
     }
 
-    // ✅ 最后统一写 JSON 响应
+    // �?最后统一�?JSON 响应
     char response[2048];
     snprintf(response, sizeof(response), "%s%s", res_hdr, body);
     SSL_write(ssl, response, strlen(response));

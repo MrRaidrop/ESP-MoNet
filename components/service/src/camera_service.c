@@ -2,9 +2,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "service/camera_service.h"
-#include "my_hal/camera_hal.h"
-#include "my_hal/wifi_hal.h"
-#include "core/msg_bus.h"
+#include "monet_hal/camera_hal.h"
+#include "monet_hal/wifi_hal.h"
+#include "monet_core/msg_bus.h"
 #include "utils/log.h"
 #include "utils/config.h"
 #include <string.h>

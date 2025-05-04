@@ -1,10 +1,10 @@
-// components/codec/include/codec/json_encoder.h
+// components/monet_codec/include/monet_codec/json_encoder.h
 #pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "core/msg_bus.h"  // for msg_t
+#include "monet_core/msg_bus.h"  // for msg_t
 
 #ifdef __cplusplus
 extern "C" {

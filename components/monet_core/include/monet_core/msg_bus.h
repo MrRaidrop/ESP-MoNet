@@ -1,4 +1,4 @@
-// core/include/core/msg_bus.h
+// monet_core/include/monet_core/msg_bus.h
 #ifndef MSG_BUS_H_
 #define MSG_BUS_H_
 
@@ -6,7 +6,7 @@
 #include "freertos/queue.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include "my_hal/camera_hal.h"
+#include "monet_hal/camera_hal.h"
 
 
 #ifdef __cplusplus
@@ -21,7 +21,7 @@ extern "C" {
  */
 typedef enum {
     EVENT_SENSOR_TEMP,       ///< Your sensor here
-    EVENT_SENSOR_LIGHT,  ///< Light sensor data (ADC)
+    EVENT_SENSOR_LIGHT,      ///< Light sensor data (ADC)
     EVENT_SENSOR_UART,       ///< Structured UART payload from external sensor
     EVENT_SENSOR_JPEG,       ///< JPEG image captured from camera
     EVENT_SENSOR_MAX         ///< Sentinel value for bounds checking

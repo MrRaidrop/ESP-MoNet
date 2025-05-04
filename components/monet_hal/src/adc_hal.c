@@ -1,6 +1,6 @@
 // hal/src/adc_hal.c
 #include "driver/adc.h"
-#include "my_hal/adc_hal.h"
+#include "monet_hal/adc_hal.h"
 #include "esp_log.h"
 #include "utils/log.h"
 

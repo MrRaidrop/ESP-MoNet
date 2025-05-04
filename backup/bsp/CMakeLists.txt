@@ -1,4 +1,4 @@
-﻿idf_component_register(
+idf_component_register(
     SRCS
         src/light_sensor_driver.c
         src/uart_handler.c

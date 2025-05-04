@@ -1,10 +1,10 @@
-// components/codec/src/json_encoder.c
+// components/monet_codec/src/json_encoder.c
 
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include "codec/json_encoder.h"
-#include "core/msg_bus.h"
+#include "monet_codec/json_encoder.h"
+#include "monet_core/msg_bus.h"
 
 bool json_encode_msg(const msg_t *msg, char *out_buf, size_t buf_size)
 {

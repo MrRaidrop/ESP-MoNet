@@ -1,4 +1,4 @@
-﻿idf_component_register(
+idf_component_register(
     SRCS
         src/wifi_service.c
         src/light_sensor_service.c
@@ -12,9 +12,9 @@
         bt 
         nvs_flash
     REQUIRES
-        core
-        codec
-        my_hal                 
+        monet_core
+        monet_codec
+        monet_hal                 
         net
         OTA
         utils

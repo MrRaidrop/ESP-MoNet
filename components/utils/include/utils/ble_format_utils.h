@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 /**
- * @brief 构建一个包含时间戳、UART 数据与计数器的 JSON 字符串
+ * @brief 构建一个包含时间戳、UART 数据与计数器�?JSON 字符�?
  *
  * @param uart_data 串口数据内容
  */

@@ -24,12 +24,12 @@ static uint16_t gatt_if;
 static uint16_t conn_id = 0xFFFF;
 static bool is_connected = false;
 static uint16_t tx_handle = 0;
-static bool adv_data_ready = false;  // 标记广播数据是否准备好
+static bool adv_data_ready = false;  // 标记广播数据是否准备�?
 
-// 全局广播 UUID 数据（必须全局，防止地址失效）
+// 全局广播 UUID 数据（必须全局，防止地址失效�?
 static uint8_t service_uuid[2] = {0xFF, 0x00};
 
-// 广播数据（必须全局）
+// 广播数据（必须全局�?
 static esp_ble_adv_data_t adv_data = {
     .set_scan_rsp = false,
     .include_name = true,
@@ -46,7 +46,7 @@ static esp_ble_adv_data_t adv_data = {
     .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
-// 广播参数（可以全局复用）
+// 广播参数（可以全局复用�?
 static esp_ble_adv_params_t adv_params = {
     .adv_int_min        = 0x20,
     .adv_int_max        = 0x40,
@@ -73,15 +73,15 @@ static esp_gatts_attr_db_t gatt_db[GATTS_NUM_HANDLES] = {
     [5] = { {ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)uuid_char_client_cfg, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, sizeof(uint16_t), sizeof(uint16_t), (uint8_t *)&(uint16_t){0x0000} } },
 };
 
-// BLE GAP 回调 - 广播数据配置完成后启动广播
+// BLE GAP 回调 - 广播数据配置完成后启动广�?
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     switch (event) {
     case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
-        ESP_LOGI(TAG, "广播数据配置完成，启动广播...");
+        ESP_LOGI(TAG, "广播数据配置完成，启动广�?..");
         adv_data_ready = true;
         esp_err_t err = esp_ble_gap_start_advertising(&adv_params);
         if (err == ESP_OK) {
-            ESP_LOGI(TAG, "BLE 广播已成功启动");
+            ESP_LOGI(TAG, "BLE 广播已成功启�?);
         } else {
             ESP_LOGE(TAG, "BLE 广播启动失败 err=0x%x", err);
         }
@@ -106,24 +106,24 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
         if (param->add_attr_tab.status != ESP_GATT_OK) {
             ESP_LOGE(TAG, "属性表创建失败，错误码=0x%x", param->add_attr_tab.status);
         } else if (param->add_attr_tab.num_handle == GATTS_NUM_HANDLES) {
-            ESP_LOGI(TAG, "属性表创建成功，启动服务...");
+            ESP_LOGI(TAG, "属性表创建成功，启动服�?..");
             esp_ble_gatts_start_service(param->add_attr_tab.handles[0]);
             tx_handle = param->add_attr_tab.handles[2]; // TX Value
         } else {
-            ESP_LOGE(TAG, "属性表句柄数量不一致");
+            ESP_LOGE(TAG, "属性表句柄数量不一�?);
         }
         break;
 
     case ESP_GATTS_CONNECT_EVT:
         conn_id = param->connect.conn_id;
         is_connected = true;
-        ESP_LOGI(TAG, "BLE 设备已连接 conn_id=%d", conn_id);
+        ESP_LOGI(TAG, "BLE 设备已连�?conn_id=%d", conn_id);
         break;
 
     case ESP_GATTS_DISCONNECT_EVT:
         is_connected = false;
         conn_id = 0xFFFF;
-        ESP_LOGI(TAG, "BLE 设备断开连接，重新广播...");
+        ESP_LOGI(TAG, "BLE 设备断开连接，重新广�?..");
         if (adv_data_ready) {
             esp_ble_gap_start_advertising(&adv_params);
         }
@@ -133,7 +133,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
         if (!param->write.is_prep && param->write.len > 0) {
             char data[128] = {0};
             memcpy(data, param->write.value, param->write.len < sizeof(data) - 1 ? param->write.len : sizeof(data) - 1);
-            ESP_LOGI(TAG, "接收到手机写入数据: %s", data);
+            ESP_LOGI(TAG, "接收到手机写入数�? %s", data);
         }
         break;
 
@@ -152,7 +152,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
     gatts_profile_event_handler(event, interface, param);
 }
 
-// 5 秒定时 notify task
+// 5 秒定�?notify task
 static void notify_task(void *arg) {
     while (1) {
         if (is_connected && tx_handle != 0) {
@@ -166,9 +166,9 @@ static void notify_task(void *arg) {
     }
 }
 
-// BLE 初始化启动入口
+// BLE 初始化启动入�?
 void ble_service_start(void) {
-    ESP_LOGI(TAG, "初始化 BLE 服务...");
+    ESP_LOGI(TAG, "初始�?BLE 服务...");
 
     esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
