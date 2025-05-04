@@ -13,7 +13,7 @@ title: System Architecture
 <div class="mermaid">
 graph TD
     SENSOR["Light Sensor (ADC)"]
-    DHT22["DHT22 Sensor"]
+    DHT22["DHT22 Sensor(can be any sensor you add)"]
     LIGHT["light_sensor_service.c"]
     TEMP["dht22_service.c"]
     CAMERA["camera_service.c<br><small>(Zero-copy JPEG)</small>"]
