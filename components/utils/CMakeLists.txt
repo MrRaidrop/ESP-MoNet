@@ -4,4 +4,5 @@
         src/ble_format_utils.c
         src/cache.c
     INCLUDE_DIRS "include"
+    REQUIRES core my_hal
 )

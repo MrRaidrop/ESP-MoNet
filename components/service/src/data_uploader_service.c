@@ -5,7 +5,7 @@
 #include "freertos/task.h"
 #include "service/data_uploader_service.h"
 #include "core/msg_bus.h"
-#include "utils/json_utils.h"
+#include "codec/json_encoder.h"
 #include "utils/log.h"
 #include "utils/cache.h"
 #include "utils/config.h"
@@ -34,8 +34,10 @@ static void light_uploader_task(void* pv)
     while (1) {
         if (xQueueReceive(queue, &msg, portMAX_DELAY) == pdTRUE) {
             // Convert light sensor data to JSON format
-            json_utils_build_light_sensor_json(json_buf, sizeof(json_buf), msg.data.value_int, msg.ts_ms);
-
+            if (!json_encode_msg(&msg, json_buf, sizeof(json_buf))) {
+                LOGW(TAG, "Unsupported message topic: %d", msg.topic);
+                continue;
+            }
             bool success = false;
 
             // Try sending via Wi-Fi

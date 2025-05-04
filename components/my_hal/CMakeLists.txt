@@ -4,6 +4,7 @@ idf_component_register(
         src/wifi_hal.c
         src/uart_hal.c
         src/camera_hal.c
+        src/dht22_hal.c
     INCLUDE_DIRS "include"
     REQUIRES
         esp32-camera

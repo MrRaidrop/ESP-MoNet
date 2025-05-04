@@ -20,8 +20,8 @@ extern "C" {
  * These can be extended as needed for new services.
  */
 typedef enum {
-    EVENT_SENSOR_LIGHT = 0,  ///< Light sensor data (ADC)
-    EVENT_SENSOR_TEMP,       ///< Temperature + humidity sensor (e.g. DHTxx)
+    EVENT_SENSOR_TEMP,       ///< Your sensor here
+    EVENT_SENSOR_LIGHT,  ///< Light sensor data (ADC)
     EVENT_SENSOR_UART,       ///< Structured UART payload from external sensor
     EVENT_SENSOR_JPEG,       ///< JPEG image captured from camera
     EVENT_SENSOR_MAX         ///< Sentinel value for bounds checking

@@ -12,10 +12,10 @@
 #include "nvs_flash.h"
 
 #include "utils/json_utils.h"
-#include "utils/log_wrapper.h"
+#include "utils/log.h"
+#include "utils/config.h"
 #include "net/https_post.h"
 #include "service/light_sensor_service.h"
-#include "service/data_reporter.h"
 #include "service/ble_service.h"
 #include "service/wifi_service.h"
 #include "service/uart_service.h"
@@ -23,9 +23,6 @@
 #include "service/data_uploader_service.h"
 
 #define TAG "MAIN"
-
-#define WIFI_SSID      "zhenghao的iPhone"
-#define WIFI_PASS      "12345678"
 
 // For testing OTA update logic after 30s
 #define FIRMWARE_VERSION "hello this version 2"
@@ -41,11 +38,11 @@
 static void ota_test_task(void *param)
 {
     for (int i = 1; i <= 30; i++) {
-        ESP_LOGI(TAG, "%s, count: %d", FIRMWARE_VERSION, i);
+        LOGI(TAG, "%s, count: %d", FIRMWARE_VERSION, i);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
-    ESP_LOGI(TAG, "30s reached, starting OTA...");
+    LOGI(TAG, "30s reached, starting OTA...");
     ota_service_start();  // 调用你已有的 OTA 启动函数
     vTaskDelete(NULL);
 }
@@ -60,8 +57,8 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    if (!wifi_service_start_and_wait(WIFI_SSID, WIFI_PASS, 10000)) {
-        ESP_LOGE(TAG, "Wi-Fi failed");
+    if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
+        LOGE(TAG, "Wi-Fi failed");
         return;
     }
 
