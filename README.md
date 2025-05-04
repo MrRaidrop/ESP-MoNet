@@ -102,7 +102,42 @@ project-root
 
 > Click the link below to view the interactive system diagram with Mermaid rendering support:  
 👉 [System Architecture Diagram - GitHub Pages](https://mrraidrop.github.io/ESP-MoNet/)
+```mermaid
+graph TD
+    SENSOR[light sensor]
+    DHT[DHT22(Can be any sensor)]
+    CAMERA[camera_service.c (Zero-copy JPEG)]
+    CAM_HAL[camera_hal.c]
+    LIGHT[light_sensor_service.c]
+    DHT_SERVICE[dht22_service.c]
+    BUS[msg_bus]
+    ENCODER[json_encoder.c]
+    UPLOADER[data_uploader_service.c]
+    UART[uart_service.c]
+    BLE[ble_service.c]
+    CACHE[Cache.c]
+    HTTP[http_post_hal.c]
+    CLOUD[Cloud server(see README_SERVER)]
+    MOBILE[mobile App(eg. nRF Connect)]
+    PC[host]
 
+    SENSOR --> LIGHT
+    DHT --> DHT_SERVICE
+    LIGHT --> BUS
+    DHT_SERVICE --> BUS
+    CAMERA --> BUS
+    CAM_HAL --> CAMERA
+    BUS --> UPLOADER
+    BUS --> UART
+    BUS --> BLE
+    UPLOADER --> ENCODER
+    ENCODER --> HTTP
+    HTTP --> CLOUD
+    UPLOADER --> CACHE
+    CACHE --> UPLOADER
+    BLE --> MOBILE
+    UART --> PC
+```
 
 > This modular architecture enables flexible service composition, better testing, and future support for more transports (e.g., MQTT).
 
