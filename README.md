@@ -32,7 +32,7 @@ English and Chinese documentation with rich Mermaid diagrams. Friendly for open-
 
 ---
 
-## 📦 Releases
+## Releases
 | Version | Date | Highlights |
 |---------|------|------------|
 | v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs |
