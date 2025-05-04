@@ -12,22 +12,22 @@ A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The
 
 ## Why This Repo
 
-- ** Modular Architecture**  
+- **Modular Architecture**  
 Clean separation into **HAL / Core / Service / Net** layers. Every module is plug-and-play—easy to remove, replace, or extend. Comes with a complete [sensor integration guide](https://mrraidrop.github.io/ESP-MoNet/#/how_to_add_sensor).
 
-- ** Event-Driven Message Bus**  
+- **Event-Driven Message Bus**  
 Fully decoupled, many-to-many publish/subscribe architecture—more flexible than direct queues and ideal for scalable embedded design.
 
-- ** Secure OTA + HTTPS**  
+- **Secure OTA + HTTPS**  
 Out-of-the-box secure OTA update system, with future support for AWS IoT Jobs.
 
-- ** CI-Ready Testing**  
+- **CI-Ready Testing**  
 Includes a BLE unit test example, and is designed for integration with `idf.py build` in CI pipelines.
 
-- ** Dual-Channel Upload**  
+- **Dual-Channel Upload**  
 Automatic failover between Wi‑Fi and BLE. RAM cache ensures no data loss during disconnections—frames are cached and retried seamlessly.
 
-- ** Bilingual Docs + Mermaid Diagrams**  
+- **Bilingual Docs + Mermaid Diagrams**  
 English and Chinese documentation with rich Mermaid diagrams. Friendly for open-source contributors worldwide.
 
 ---
