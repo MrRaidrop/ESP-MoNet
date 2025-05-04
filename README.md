@@ -32,21 +32,30 @@ English and Chinese documentation with rich Mermaid diagrams. Friendly for open-
 
 ---
 
+## 📦 Releases
+| Version | Date | Highlights |
+|---------|------|------------|
+| v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs |
+
+---
+
 ## Features
 
 - Auto-reconnecting Wi-Fi connection manager
-- Periodic light sensor readings via ADC  
-  *(currently only light sensor available—T_T)*
+- Periodic sensor readings via ADC (Analog-to-Digital Converter) or Digital Pin
 - Secure HTTPS POST to cloud with JSON payloads
-- Data reporter with 5-second upload loop
+- Data uploader: 5-second loop by default (adaptive via RSSI)
 - UART echo for sensor debugging
-- BLE GATT Server: notifies mobile device with sensor data (e.g. light)
+- BLE GATT Server: notifies mobile device with sensor data (e.g. light / JPEG hash)
 - Component-based structure under `components/`
 - Over-the-Air (OTA) firmware update (starts 30s after boot by default)
 - **Camera (OV2640) JPEG capture + HTTP upload**
-- **Message Bus `EVENT_SENSOR_JPEG` for binary frames**
-- [Camera Module Deep Dive](#camera-module-deep-dive)
-- Future-ready: designed for MQTT integration
+- **Message Bus `EVENT_SENSOR_JPEG` for binary frame pipeline**
+- **Zero-copy JPEG transmission (`camera_fb_t*` passthrough, no memcpy)**
+- **Offline binary JPEG ring buffer with auto-retry**
+- **Dynamic FPS: auto-adjusts based on Wi-Fi signal (RSSI)**
+- Future-ready: designed for MQTT and custom sensors
+- [Camera Module Deep Dive](docs/camera_module.md)
 
 ---
 
@@ -98,43 +107,81 @@ project-root
 > This modular architecture enables flexible service composition, better testing, and future support for more transports (e.g., MQTT).
 
 ---
+# Getting Started
 
-##  Getting Started
+This guide will help you build, configure, and run the ESP-MoNet project on your **ESP32-S3** board.
 
-### 1. Prerequisites
+## Prerequisites
 
-- ESP-IDF 5.4+ installed and configured (Vscode ESP-IDF extension available)
-- Supported board: ESP32-S3 devkit
-- Internet access for cloud upload
-- BLE mobile app (e.g., **nRF Connect** by Nordic)
+- ESP-IDF v5.0 or higher installed and configured
+- Your ESP32-S3 DevKit board (e.g. Freenova ESP32-S3 with PSRAM)
+- A USB cable and access to serial terminal (e.g. `screen`, `minicom`, or `idf.py monitor`)
 
-### 2. Build and Flash
+## Quick Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/MrRaidrop/ESP-MoNet.git
+   cd ESP-MoNet
+   ```
+
+2. **Set the target chip**
+   ```bash
+   idf.py set-target esp32s3
+   ```
+
+3. **Use provided configuration**
+   ```bash
+   cp sdkconfig.default sdkconfig
+   ```
+
+4. **Configure and verify settings (optional)**
+   ```bash
+   idf.py menuconfig
+   ```
+
+   Key settings (already set in `sdkconfig.default`, but double-check if needed):
+
+   - **Wi-Fi**: enabled by default (`CONFIG_WIFI_SERVICE_ENABLE`)  
+   - **BLE**: enabled (`CONFIG_BLE_SERVICE_ENABLE`)  
+     BLE needs **Bluetooth 4.2**, not 5.0 (required on ESP32-S3)
+   - **Camera**: enabled (`CONFIG_CAMERA_SERVICE_ENABLE`)  
+     Requires **PSRAM support** on ESP32-S3 and camera module (OV2640)
+   - **ADC / Light Sensor**: enabled (`CONFIG_LIGHT_SENSOR_ENABLE`)
+   - **msg_bus / cache / JSON / uploader** modules are enabled
+
+## Build & Flash
 
 ```bash
-idf.py set-target esp32s3
-idf.py build
-idf.py -p /dev/ttyUSB0 flash monitor
+idf.py build flash monitor
 ```
 
-### 3. Wi-Fi Configuration
+> Tip: Use `idf.py menuconfig` anytime to enable/disable features in the **Modules** section.
 
-Update your SSID and password in `utils/config.h`
+## Optional: Verify Functionality
 
-```c
-#define WIFI_SSID "your-ssid"
-#define WIFI_PASS "your-password"
-```
-It will be pass to `service/src/wifi_service.c`
+- **BLE**: Connect via **nRF Connect**, observe sensor notify (e.g. `light_value`, `jpeg_frame_hash`)
+- **UART**: Run `screen /dev/ttyUSB0 115200` or use serial terminal to see logs
+- **Wi-Fi**: ESP32 will upload JPEG + sensor data to your configured HTTPS server
 
-### 4. BLE Verification
+## What’s pre-configured in sdkconfig.default
 
-- Install **nRF Connect** mobile app (or other)
-- Scan and connect to `ESP_GATTS_DEMO`
-- Locate the characteristic under service UUID `0x00FF`
-- Enable **Notify**
-- You will receive 4-byte little-endian integer (e.g., light = `0x0802 = 520`)
+| Module         | Setting                                     |
+|----------------|---------------------------------------------|
+| Wi-Fi          | Enabled, STA mode                           |
+| BLE            | Enabled, **4.2** only (not 5.0!)             |
+| Camera         | Enabled, **PSRAM required**                 |
+| Light Sensor   | Enabled                                     |
+| Logging        | Info level, tag filtering enabled           |
+| Services       | All core modules enabled (msg_bus, cache)   |
 
-### 4. OTA Update Test
+---
+
+Ready to go? Plug in your board, flash it, and watch the data flow.
+
+---
+
+### OTA Update Test
 
 Workflow:
 Firmware boots and connects to Wi-Fi
@@ -157,7 +204,7 @@ For complete OTA server setup instructions, refer to:
 
 ---
 
-## 📤 JSON Upload Format
+## JSON Upload Format
 
 All sensor data is uploaded in a unified JSON format via HTTP POST or BLE Notify.
 
@@ -183,9 +230,10 @@ You can modify `json_utils.c` to use field-style format instead:
 ```
 
 ---
-##  Roadmap
 
-## 📦 Feature Overview
+# Project Roadmap
+
+## Feature Overview
 
 | Feature                         | Status        | Notes                                                |
 |----------------------------------|---------------|------------------------------------------------------|
@@ -198,14 +246,19 @@ You can modify `json_utils.c` to use field-style format instead:
 | Modular task architecture       | ✅ Done        | Each service runs as isolated FreeRTOS task          |
 | OTA update (Wi-Fi)              | ✅ Done        | HTTPS OTA using `esp_https_ota()`                    |
 | GitHub repo + documentation     | ✅ Done        | Clean README, architecture diagram, GitHub Actions   |
-| MQTT secure upload              | ⏳ In Progress | Add TLS MQTT broker support                          |
+| Camera JPEG capture             | ✅ Done        | OV2640 integration + camera_hal abstraction          |
+| Zero-copy JPEG pipeline         | ✅ Done        | `camera_fb_t*` passed directly via msg_bus           |
+| Offline binary JPEG cache       | ✅ Done        | flash-resident ring buffer with auto flush           |
+| Dynamic FPS based on RSSI       | ✅ Done        | Adapts to Wi-Fi quality automatically                |
+| MQTT secure upload              | 🔜 Planned     | Add TLS MQTT broker support                          |
 | OTA update (BLE)                | 🔜 Planned     | Plan to implement BLE-based OTA update               |
 | DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor support            |
 | Flutter mobile app (sensor UI)  | 🔜 Planned     | BLE dashboard for real-time sensor data              |
 | Flutter mobile app (BLE OTA)    | 🔜 Planned     | Integrated BLE OTA functionality                     |
 
 ---
-## 🚧 Known Limitations & Improvement Plan
+
+## Known Limitations & Improvement Plan
 
 | Category       | Issue Description                                 | Improvement Direction                                | Status        |
 |----------------|----------------------------------------------------|------------------------------------------------------|---------------|
@@ -217,16 +270,18 @@ You can modify `json_utils.c` to use field-style format instead:
 | OTA Mechanism  | No image validation or rollback                    | Add SHA256 + dual partition fallback                 | 🔜 Planned     |
 | BLE Extension  | Only 1 notify char, no write command support       | Extend GATT profile to support control commands      | ⏳ In Progress |
 
-
 > Want to contribute or suggest improvements? Feel free to [open an issue](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/issues) or fork this repo!
 
 
 ---
-##  Example Use Cases
+## Example Use Cases
 
-- Low-power sensor node with cloud logging
-- BLE + UART + MQTT hybrid IoT edge device
-- Sensor/actuator hub with REST and mobile access
+- Wi-Fi JPEG camera node with fail-safe cache
+- BLE-notifying environmental monitor
+- Hybrid image + sensor uploader
+- Custom IoT prototype platform, easily extendable to  sensors, or servo output
+- Edge computing node with dynamic FPS control
+- Developer-friendly OTA testbed
 
 ---
 
@@ -433,5 +488,5 @@ MIT License — Use freely, modify, and integrate.
 
 ---
 
-🛠️ Last Updated: May 1, 2025  
+🛠️ Last Updated: May 3, 2025  
 Made with ❤️ by [Greyson Yu](https://github.com/MrRaidrop)

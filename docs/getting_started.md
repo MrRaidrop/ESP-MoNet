@@ -1,0 +1,81 @@
+---
+layout: default
+title: Getting Started
+---
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true });
+</script>
+
+# Getting Started
+
+This guide will help you build, configure, and run the ESP-MoNet project on your **ESP32-S3** board.
+
+## Prerequisites
+
+- ESP-IDF v5.0 or higher installed and configured
+- Your ESP32-S3 DevKit board (e.g. Freenova ESP32-S3 with PSRAM)
+- A USB cable and access to serial terminal (e.g. `screen`, `minicom`, or `idf.py monitor`)
+
+## Quick Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/MrRaidrop/ESP-MoNet.git
+   cd ESP-MoNet
+   ```
+
+2. **Set the target chip**
+   ```bash
+   idf.py set-target esp32s3
+   ```
+
+3. **Use provided configuration**
+   ```bash
+   cp sdkconfig.default sdkconfig
+   ```
+
+4. **Configure and verify settings (optional)**
+   ```bash
+   idf.py menuconfig
+   ```
+
+   Key settings (already set in `sdkconfig.default`, but double-check if needed):
+
+   - ✅ **Wi-Fi**: enabled by default (`CONFIG_WIFI_SERVICE_ENABLE`)  
+   - ✅ **BLE**: enabled (`CONFIG_BLE_SERVICE_ENABLE`)  
+     ⚠️ BLE needs **Bluetooth 4.2**, not 5.0 (required on ESP32-S3)
+   - ✅ **Camera**: enabled (`CONFIG_CAMERA_SERVICE_ENABLE`)  
+     🔁 Requires **PSRAM support** on ESP32-S3 and camera module (OV2640)
+   - ✅ **ADC / Light Sensor**: enabled (`CONFIG_LIGHT_SENSOR_ENABLE`)
+   - ✅ **msg_bus / cache / JSON / uploader** modules are enabled
+
+## Build & Flash
+
+```bash
+idf.py build flash monitor
+```
+
+> Tip: Use `idf.py menuconfig` anytime to enable/disable features in the **Modules** section.
+
+## Optional: Verify Functionality
+
+- **BLE**: Connect via **nRF Connect**, observe sensor notify (e.g. `light_value`, `jpeg_frame_hash`)
+- **UART**: Run `screen /dev/ttyUSB0 115200` or use serial terminal to see logs
+- **Wi-Fi**: ESP32 will upload JPEG + sensor data to your configured HTTPS server
+
+## What’s pre-configured in sdkconfig.default
+
+| Module         | Setting                                     |
+|----------------|---------------------------------------------|
+| Wi-Fi          | Enabled, STA mode                           |
+| BLE            | Enabled, **4.2** only (not 5.0!)             |
+| Camera         | Enabled, **PSRAM required**                 |
+| Light Sensor   | Enabled                                     |
+| Logging        | Info level, tag filtering enabled           |
+| Services       | All core modules enabled (msg_bus, cache)   |
+
+---
+
+Ready to go? Plug in your board, flash it, and watch the data flow.
