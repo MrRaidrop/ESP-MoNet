@@ -27,6 +27,17 @@
 |-------|-------------|--------------------------------------------------------------|
 | v0.5  | 2025‑05‑03 | 零拷贝相机、二进制缓存、自适应 FPS、新文档结构               |
 
+
+---
+
+| 版本                                | 计划发布日期\* | 关键改动                                                                                                                                                                          | 交付标准                                                                                            |
+| --------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **v0.7 — Service Registry**       | 2025‑05  | • 引入 **`service_registry`**<br>• 所有 `*_service_start()` 通过 `SERVICE_REGISTER()` 注册<br>• `app_main()` 精简为一行 `service_registry_init()`<br>• README 与 *How to Add Sensor* 更新注册说明 | \* 固件可正常构建运行<br>\* `light / camera / DHT22 / uploader / UART / BLE` 全部经 registry 启动<br>\* 架构图同步 |
+| **v0.8 — Kconfig Migration**      | 2025‑05  | • 将 `utils/config.h` 拆分为 **组件级 Kconfig**<br>• 新增 `sdkconfig.defaults` 示例<br>• README “Quick Start” 改为 `idf.py menuconfig` 流程<br>• CI 验证缺省 `sdkconfig` 可直接构建                   | \* 所有配置项可在 menuconfig 中切换<br>\* `config.h` 仅包装 `sdkconfig.h`                                    |
+| **v0.9 — BLE Service Refinement** | 2025‑05  | • 重构 **BLE GATT**：分离 *profile* 与 *service* 层，提供 `ble_register_characteristic()` API<br>• 示例：5 行代码新增自定义 Notify 特征<br>• 更新 *How to Add BLE Characteristic* 指南                   | \* BLE 单元测试覆盖新 API<br>\* 原有 Light Notify 功能仍兼容                                                  |
+| **v1.0 — Quality Release**        | 2025‑06  | • **单元测试覆盖 ≥ 80 %**（cache / encoder / msg\_bus / registry / BLE API）<br>• GitHub Actions ⟶ 构建 + `ctest` + clang‑format 全绿<br>• 发布二进制固件 & 制作 2‑分钟演示视频<br>• 完整中英文文档、架构图、示例      | \* CI 绿灯<br>\* CHANGELOG & Release Notes 完整<br>\* README 顶部添加 Demo 视频链接                         |
+
+
 ---
 
 ## 功能列表

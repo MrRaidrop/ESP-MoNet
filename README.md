@@ -39,6 +39,18 @@ English and Chinese documentation with rich Mermaid diagrams. Friendly for open-
 
 ---
 
+## Milestone Roadmap
+
+| Version                             | ETA       | Key Changes                                                                                                                                                                     | Delivery Criteria                                                                                       |
+|-------------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| **v0.7 — Service Registry**         | 2025‑05   | • Introduce **`service_registry`** mechanism<br>• All `*_service_start()` functions registered via `SERVICE_REGISTER()` macro<br>• `app_main()` reduced to `service_registry_init()` call<br>• README and *How to Add Sensor* updated | \* Firmware builds and runs correctly<br>\* All core services (`light`, `camera`, `DHT22`, `uploader`, `UART`, `BLE`) launched via registry<br>\* Architecture diagram updated |
+| **v0.8 — Kconfig Migration**        | 2025‑05   | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h`                           |
+| **v0.9 — BLE Service Refinement**   | 2025‑05   | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible                             |
+| **v1.0 — Quality Release**          | 2025‑06   | • **≥ 80 % unit test coverage** (cache, encoder, msg_bus, registry, BLE API)<br>• GitHub Actions: build + `ctest` + `clang-format` all pass<br>• Public firmware binary + 2‑min demo video<br>• Complete bilingual docs and architecture diagrams | \* CI passes all checks<br>\* CHANGELOG & release notes finalized<br>\* README features embedded demo video link          |
+
+
+---
+
 ## Features
 
 - Auto-reconnecting Wi-Fi connection manager
@@ -277,7 +289,7 @@ The upload system requires no other changes — just define the message and form
 | Dynamic FPS based on RSSI       | ✅ Done        | Adapts to Wi-Fi quality automatically                |
 | MQTT secure upload              | 🔜 Planned     | Add TLS MQTT broker support                          |
 | OTA update (BLE)                | 🔜 Planned     | Plan to implement BLE-based OTA update               |
-| DMA + Ring Buffer integration   | 🔜 Planned     | For ultrasonic / high-rate sensor support            |
+| DMA + Ring Buffer integration   | ✅ Done        | For ultrasonic / high-rate sensor support            |
 | Flutter mobile app (sensor UI)  | 🔜 Planned     | BLE dashboard for real-time sensor data              |
 | Flutter mobile app (BLE OTA)    | 🔜 Planned     | Integrated BLE OTA functionality                     |
 
