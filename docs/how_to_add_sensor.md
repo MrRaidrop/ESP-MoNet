@@ -8,7 +8,7 @@ title: How to Add a Sensor
   mermaid.initialize({ startOnLoad: true });
 </script>
 
-# 🧩 How to Add a New Sensor
+# How to Add a New Sensor
 
 This guide walks you through integrating a new sensor (e.g., DHT22 for temperature/humidity) into the system.  
 The project uses a clean, modular structure — all sensors follow the **3-step rule**.
@@ -93,24 +93,39 @@ Ensure you edit `CMakeLists.txt`:
 
 ## 4. Extend JSON Encoding
 
-To include your new sensor in cloud uploads, you only need to extend the `json_build_from_msg()` function in `json_utils.c`.
+To support cloud upload for your new sensor,
+you no longer need to snprintf() JSON strings manually.
 
-Each message type (based on `msg->topic`) will be matched in a `switch` block and encoded accordingly.
+Instead, the system uses a centralized encoder:
 
 ```c
-bool json_build_from_msg(const msg_t *msg, char *out_buf, size_t buf_size)
-{
-    switch (msg->topic) {
-        case EVENT_SENSOR_TEMP:
-            snprintf(out_buf, buf_size,
-                "{\"type\":\"temp\",\"t\":%.2f,\"h\":%.2f,\"ts\":%" PRIu32 "}",
-                msg->data.temp_hum.temperature,
-                msg->data.temp_hum.humidity,
-                msg->ts_ms);
-            return true;
-        ...
-    }
-}
+#include "codec/json_encoder.h"
+
+char json_buf[256];
+json_encoder_encode(&msg, json_buf, sizeof(json_buf));
+```
+
+To support your sensor:
+
+Add a new topic (e.g. EVENT_SENSOR_TEMP) in msg_bus.h
+
+Extend the msg_t union with a matching data struct (e.g. temp_hum)
+
+Add a new case block in json_encoder_encode() in json_encoder.c:
+
+```c
+case EVENT_SENSOR_TEMP:
+    snprintf(out_buf, buf_size,
+        "{ \"type\": \"temp\", \"temperature\": %.2f, \"humidity\": %.2f, \"ts\": %" PRIu32 " }",
+        msg->data.temp_hum.temperature,
+        msg->data.temp_hum.humidity,
+        msg->ts_ms);
+    return true;
+```
+
+No further change is needed in uploader or cache,
+your new sensor will be automatically handled by both Wi-Fi and BLE.
+
 ---
 
 ## Example JSON Output
@@ -138,7 +153,7 @@ To notify mobile devices via BLE, just:
 
 ---
 
-## Modify `msg_t` Structure
+## 5.Modify `msg_t` Structure
 
 To support new sensor data types (like temperature and humidity), you should update the `msg_t` definition in `core/msg_bus.h`:
 
