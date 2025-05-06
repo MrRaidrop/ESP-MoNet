@@ -19,8 +19,9 @@
 #include "service/ble_service.h"
 #include "service/wifi_service.h"
 #include "service/uart_service.h"
-#include "ota/https_ota_service.h" 
+#include "OTA/https_ota_service.h" 
 #include "service/data_uploader_service.h"
+#include "monet_core/service_registry.h"
 
 #define TAG "MAIN"
 
@@ -57,17 +58,20 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
-        LOGE(TAG, "Wi-Fi failed");
-        return;
-    }
+    service_registry_start_all();
 
-    light_sensor_service_start();
-    ble_service_start();
+
+    // if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
+    //     LOGE(TAG, "Wi-Fi failed");
+    //     return;
+    // }
+
+    // light_sensor_service_start();
+    // ble_service_start();
     //uart_service_start();
     //data_reporter_start();
     vTaskDelay(pdMS_TO_TICKS(500));
-    data_uploader_service_start();
+    //data_uploader_service_start();
 
     //xTaskCreate(&ota_test_task, "ota_test_task", 4096, NULL, 5, NULL);
 }

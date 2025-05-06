@@ -35,6 +35,7 @@ static void uart_send_task(void *arg)
     }
 }
 
+
 /**
  * @brief Task to receive UART input and publish as msg_bus EVENT_SENSOR_UART.
  */
@@ -52,7 +53,7 @@ static void uart_receive_task(void *arg)
             msg.data.uart_text.str[sizeof(msg.data.uart_text.str) - 1] = '\0';
 
             msg_bus_publish(&msg);
-            LOGI(TAG, "[RX] %s â†?published", line);
+            LOGI(TAG, "[RX] %s ï¿½?published", line);
             free(line);
         }
     }

@@ -41,7 +41,7 @@ extern void ble_format_notify_data(int value, uint8_t *out);
 #define GATTS_DESCR_UUID_TEST_B     0x2222
 #define GATTS_NUM_HANDLE_TEST_B     4
 
-static char test_device_name[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATTS_DEMO";
+static char test_device_name[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATTS_Monet";
 
 #define TEST_MANUFACTURER_DATA_LEN  17
 
@@ -742,7 +742,7 @@ static void ble_service_task(void *arg) {
         ESP_LOGE(GATTS_TAG, "set local MTU failed, error code = %x", local_mtu_ret);
     }
 
-    vTaskDelete(NULL); // BLE 初始化完成后，删除任�?
+    vTaskDelete(NULL); // BLE 初始化完成后，删除任�?
 }
 
 // Changed into using msg_bus to notify
@@ -766,7 +766,7 @@ static void ble_service_task(void *arg) {
 //             );
 //         }
 
-//         vTaskDelay(pdMS_TO_TICKS(3000));  // �?3 秒发送一�?
+//         vTaskDelay(pdMS_TO_TICKS(3000));  // �?3 秒发送一�?
 //     }
 // }
 

@@ -573,7 +573,7 @@ cache_flush_once_with_sender_ex(http_post_image);
 
 ---
 
-## Next Milestones
+## Next Milestones for Camera
 
 - MJPEG streaming via `multipart/x-mixed-replace`
 - SD‑Card fallback cache when PSRAM full
