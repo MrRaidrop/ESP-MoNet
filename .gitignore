@@ -3,7 +3,6 @@ build/
 *.bin
 *.elf
 *.map
-sdkconfig
 sdkconfig.old
 
 # IDE-specific files
