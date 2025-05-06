@@ -24,7 +24,8 @@ typedef enum {
     EVENT_SENSOR_LIGHT,      ///< Light sensor data (ADC)
     EVENT_SENSOR_UART,       ///< Structured UART payload from external sensor
     EVENT_SENSOR_JPEG,       ///< JPEG image captured from camera
-    EVENT_SENSOR_MAX         ///< Sentinel value for bounds checking
+    EVENT_SENSOR_MAX,         ///< Sentinel value for bounds checking
+    EVENT_SENSOR_ALL = 0xFF  ///< All topics (for internal use)
 } msg_topic_t;
 
 #define MSG_JPEG_BUF_SIZE 32768  ///< Maximum size of JPEG buffer in bytes
@@ -89,6 +90,9 @@ void msg_bus_publish(const msg_t* msg);
  * @return true on success, false if maximum subscribers reached
  */
 bool msg_bus_subscribe(msg_topic_t topic, QueueHandle_t queue);
+
+
+bool msg_bus_subscribe_any(QueueHandle_t q); 
 
 #ifdef __cplusplus
 }

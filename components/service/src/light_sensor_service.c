@@ -7,7 +7,6 @@
 #include "utils/config.h"
 #include "utils/log.h"
 #include "monet_core/msg_bus.h"
-#include "monet_core/service_registry.h"
 
 
 #undef light_sensor_task
@@ -27,6 +26,7 @@ int light_sensor_get_cached_value(void) {
 static void light_sensor_task(void *pvParameters)
 {
     adc_hal_init(CONFIG_LIGHT_SENSOR_CHANNEL);
+    LOGI(TAG, "Driver initialized on channel %d", CONFIG_LIGHT_SENSOR_CHANNEL);
     LOGI(TAG, "Light sensor task started");
     while (1) {
         latest_light_value = adc_hal_read(CONFIG_LIGHT_SENSOR_CHANNEL);
@@ -50,12 +50,16 @@ static void light_sensor_task(void *pvParameters)
     }
 }
 
-void light_sensor_service_start(void)
-{
-    LOGI(TAG, "Driver initialized on channel %d", CONFIG_LIGHT_SENSOR_CHANNEL);
-    // xTaskCreate(light_sensor_task, "light_sensor_task",
-    //             LIGHT_SENSOR_TASK_STACK_SIZE, NULL,
-    //             LIGHT_SENSOR_TASK_PRIORITY, NULL);
-}
 
-SERVICE_REGISTER(light_sensor_service, light_sensor_task, 4096, 5, light_sensor_task)
+static const service_desc_t light_sensor_service_desc = {
+    .name = "light_sensor_service",
+    .task_fn = light_sensor_task,
+    .task_name = "light_sensor_task",
+    .stack_size = LIGHT_SENSOR_TASK_STACK_SIZE,
+    .priority = LIGHT_SENSOR_TASK_PRIORITY
+};
+
+// Register the service on main
+const service_desc_t* get_light_sensor_service(void) {
+    return &light_sensor_service_desc;
+}

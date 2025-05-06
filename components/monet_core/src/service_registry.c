@@ -3,20 +3,15 @@
  * @brief Implementation of centralized service registry for managing lifecycle of all system services.
  */
 
- #include "monet_core/service_registry.h"
  #include <string.h>
  #include <stdlib.h>
- #include "esp_log.h"
+ #include "monet_core/service_registry.h"
+ #include "monet_core/msg_bus.h"
+ #include "utils/log.h"
  
  #define MAX_SERVICES 16
  #define TAG "SVC_REG"
- 
- /**
-  * @brief Weakly linked service registry start and stop symbols.
-  * These are used to find the start and end of the service registry in memory.
-  */
-extern const service_desc_t *__start_svc_registry[] __attribute__((weak));
-extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
+ #define MSG_TOPIC_END EVENT_SENSOR_MAX
  
  typedef struct {
      const service_desc_t *desc;
@@ -31,12 +26,12 @@ extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
  {
      if (!desc || !desc->name || !desc->task_fn) return;
      if (s_registry_count >= MAX_SERVICES) {
-         ESP_LOGW(TAG, "Registry full, cannot register %s", desc->name);
+         LOGW(TAG, "Registry full, cannot register %s", desc->name);
          return;
      }
      for (size_t i = 0; i < s_registry_count; ++i) {
          if (strcmp(s_registry[i].desc->name, desc->name) == 0) {
-             ESP_LOGW(TAG, "Service %s already registered", desc->name);
+             LOGW(TAG, "Service %s already registered", desc->name);
              return;
          }
      }
@@ -45,7 +40,26 @@ extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
          .handle = NULL,
          .state = SERVICE_STATE_DISABLED
      };
-     ESP_LOGI(TAG, "Registered service: %s", desc->name);
+     LOGI(TAG, "Registered service: %s", desc->name);
+ }
+ 
+ static bool _auto_subscribe(const service_desc_t *desc, TaskHandle_t handle)
+ {
+     if (desc->role != SERVICE_ROLE_SUBSCRIBER || !desc->topics) return true;
+ 
+     QueueHandle_t q = xQueueCreate(4, sizeof(msg_t));
+     if (!q) return false;
+ 
+     for (const msg_topic_t *t = desc->topics; *t != MSG_TOPIC_END; ++t) {
+         if (!msg_bus_subscribe(*t, q)) {
+             LOGW(TAG, "Cannot subscribe %s to topic %d", desc->name, *t);
+         }
+     }
+ 
+     // Optional: pass the queue via task notification, global, or directly
+     // xTaskNotify(handle, (uint32_t)q, eSetValueWithOverwrite);
+ 
+     return true;
  }
  
  bool service_registry_start(const char *name)
@@ -59,15 +73,22 @@ extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
                  s_registry[i].desc->task_fn,
                  s_registry[i].desc->task_name,
                  s_registry[i].desc->stack_size,
-                 NULL,
+                 NULL, // You can pass the queue handle if needed
                  s_registry[i].desc->priority,
                  &s_registry[i].handle);
+ 
              if (res == pdPASS) {
+                 if (!_auto_subscribe(s_registry[i].desc, s_registry[i].handle)) {
+                     LOGE(TAG, "Auto-subscribe failed for %s", name);
+                     vTaskDelete(s_registry[i].handle);
+                     return false;
+                 }
+ 
                  s_registry[i].state = SERVICE_STATE_RUNNING;
-                 ESP_LOGI(TAG, "Started service: %s", name);
+                 LOGI(TAG, "Started service: %s", name);
                  return true;
              } else {
-                 ESP_LOGE(TAG, "Failed to start service: %s", name);
+                 LOGE(TAG, "Failed to start service: %s", name);
                  return false;
              }
          }
@@ -83,7 +104,7 @@ extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
              vTaskDelete(s_registry[i].handle);
              s_registry[i].handle = NULL;
              s_registry[i].state = SERVICE_STATE_DISABLED;
-             ESP_LOGI(TAG, "Stopped service: %s", name);
+             LOGI(TAG, "Stopped service: %s", name);
              return true;
          }
      }
@@ -117,27 +138,13 @@ extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
      return false;
  }
  
-int32_t service_registry_get_stack_usage(const char *name){
-    for (size_t i = 0; i < s_registry_count; ++i) {
-        if (strcmp(s_registry[i].desc->name, name) == 0) {
-            return uxTaskGetStackHighWaterMark(s_registry[i].handle);
-        }
-    }
-    return -1;
-}
-
-static void service_registry_autoload(void)
-{
-    if (!__start_svc_registry || !__stop_svc_registry) return;
-
-    for (const service_desc_t **p = __start_svc_registry; p < __stop_svc_registry; ++p) {
-        service_registry_register(*p);
-    }
-}
-
-// hock
-__attribute__((constructor))
-static void service_registry_init_ctor(void)
-{
-    service_registry_autoload();
-}
+ int32_t service_registry_get_stack_usage(const char *name)
+ {
+     for (size_t i = 0; i < s_registry_count; ++i) {
+         if (strcmp(s_registry[i].desc->name, name) == 0) {
+             return uxTaskGetStackHighWaterMark(s_registry[i].handle);
+         }
+     }
+     return -1;
+ }
+ 

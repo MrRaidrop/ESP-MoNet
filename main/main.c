@@ -17,6 +17,7 @@
 #include "net/https_post.h"
 #include "service/light_sensor_service.h"
 #include "service/ble_service.h"
+#include "service/camera_service.h"
 #include "service/wifi_service.h"
 #include "service/uart_service.h"
 #include "OTA/https_ota_service.h" 
@@ -27,6 +28,9 @@
 
 // For testing OTA update logic after 30s
 #define FIRMWARE_VERSION "hello this version 2"
+
+extern void light_sensor_service_svc_ctor(void);
+__attribute__((used)) static void *force_link = (void *)&light_sensor_service_svc_ctor;
 
 
 
@@ -58,20 +62,26 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    service_registry_start_all();
+    service_registry_register(get_light_sensor_service());
 
+    service_registry_register(get_camera_service());
+
+    service_registry_start_all();
+    
 
     // if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
     //     LOGE(TAG, "Wi-Fi failed");
     //     return;
     // }
 
-    // light_sensor_service_start();
+     
     // ble_service_start();
     //uart_service_start();
     //data_reporter_start();
-    vTaskDelay(pdMS_TO_TICKS(500));
     //data_uploader_service_start();
 
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
     //xTaskCreate(&ota_test_task, "ota_test_task", 4096, NULL, 5, NULL);
 }

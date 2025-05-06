@@ -6,6 +6,8 @@
 extern "C" {
 #endif
 
+#include "monet_core/service_registry.h"
+
 /**
  * @file camera_service.h
  * @brief Periodic JPEG capture service using camera_hal.
@@ -19,13 +21,18 @@ extern "C" {
  */
 
 /**
- * @brief Start the camera service task.
+ * @brief Get the service descriptor for the camera service.
  *
- * Initializes the camera using `camera_hal_init()` and starts a FreeRTOS
- * task to capture JPEG frames at regular intervals defined in config.h file.
- * Captured frames are published to the `msg_bus` with `EVENT_SENSOR_JPEG` topic.
+ * This function returns a pointer to a statically defined `service_desc_t` structure
+ * that describes the camera service. The descriptor contains the task function,
+ * task name, stack size, and priority required by the service registry to create and manage the task.
+ *
+ * This function is typically called in `main.c` during system initialization to register
+ * the camera service via `service_registry_register()`.
+ *
+ * @return Pointer to a `service_desc_t` describing the camera service.
  */
-void camera_service_start(void);
+const service_desc_t* get_camera_service(void);
 
 #ifdef __cplusplus
 }

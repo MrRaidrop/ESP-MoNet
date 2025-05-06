@@ -6,8 +6,28 @@
 #define TAG "MSG_BUS"
 #define MAX_SUBSCRIBERS_PER_TOPIC 4
 
+
+#define MAX_GLOBAL_SUBS 8
+static QueueHandle_t g_global_subs[MAX_GLOBAL_SUBS] = {0};
 static QueueHandle_t subscriber_queues[EVENT_SENSOR_MAX][MAX_SUBSCRIBERS_PER_TOPIC] = {0};
 static SemaphoreHandle_t bus_mutex;
+
+bool msg_bus_subscribe_any(QueueHandle_t q)
+{
+    if (!q) return false;
+    if (bus_mutex == NULL) bus_mutex = xSemaphoreCreateMutex();
+    xSemaphoreTake(bus_mutex, portMAX_DELAY);
+    for (int i = 0; i < MAX_GLOBAL_SUBS; ++i) {
+        if (!g_global_subs[i]) { g_global_subs[i] = q; goto ok; }
+    }
+    xSemaphoreGive(bus_mutex); return false;
+ok:
+    xSemaphoreGive(bus_mutex); return true;
+}
+
+
+
+
 
 void msg_bus_publish(const msg_t* msg)
 {
@@ -18,8 +38,16 @@ void msg_bus_publish(const msg_t* msg)
 
     for (int i = 0; i < MAX_SUBSCRIBERS_PER_TOPIC; ++i) {
         QueueHandle_t q = subscriber_queues[msg->topic][i];
-        if (q != NULL) {
-            xQueueSend(q, msg, 0); // non-blocking send
+        if (q) {
+            xQueueSend(q, msg, 0);
+        }
+    }
+
+    // all time subscribers can receive all messages
+    for (int i = 0; i < MAX_GLOBAL_SUBS; ++i) {
+        QueueHandle_t q = g_global_subs[i];
+        if (q) {
+            xQueueSend(q, msg, 0);
         }
     }
 

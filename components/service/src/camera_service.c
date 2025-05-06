@@ -32,6 +32,10 @@ static void update_capture_interval(void)
 // Camera service task function
 static void camera_service_task(void *param)
 {
+    if (camera_hal_init() != ESP_OK) {
+        LOGE(TAG, "Camera initialization failed. Service not started.");
+        return;
+    }
     while (1) {
         // Capture a frame from the camera
         camera_fb_t *fb = camera_hal_capture();
@@ -57,22 +61,15 @@ static void camera_service_task(void *param)
     }
 }
 
+static const service_desc_t camera_service_desc = {
+    .name = "camera_service",
+    .task_fn = camera_service_task,
+    .task_name = "camera_service_task",
+    .stack_size = 8192,
+    .priority = 5
+};
 
-// Start the camera service
-void camera_service_start(void)
+const service_desc_t* get_camera_service(void)
 {
-    if (camera_hal_init() != ESP_OK) {
-        LOGE(TAG, "Camera initialization failed. Service not started.");
-        return;
-    }
-
-    // Create a FreeRTOS task for the camera service
-    xTaskCreate(
-        camera_service_task,      // Task function
-        "camera_service_task",    // Name
-        8192,                     // Stack size
-        NULL,                     // Parameters
-        5,                        // Priority
-        NULL                      // Task handle
-    );
+    return &camera_service_desc;
 }
