@@ -12,16 +12,12 @@
  #define TAG "SVC_REG"
  
  /**
-  * @brief Symbols provided by the linker for .rodata.svc_registry section.
-  * These are populated automatically via SERVICE_REGISTER macro using section().
-  * No need for manual extern or registration.
+  * @brief Weakly linked service registry start and stop symbols.
+  * These are used to find the start and end of the service registry in memory.
   */
- extern const service_desc_t *__start_svc_registry[];
- extern const service_desc_t *__stop_svc_registry[];
+extern const service_desc_t *__start_svc_registry[] __attribute__((weak));
+extern const service_desc_t *__stop_svc_registry[] __attribute__((weak));
  
- /**
-  * @brief Internal runtime tracking entry for each registered service.
-  */
  typedef struct {
      const service_desc_t *desc;
      TaskHandle_t handle;
@@ -121,31 +117,27 @@
      return false;
  }
  
- int32_t service_registry_get_stack_usage(const char *name){
-     for (size_t i = 0; i < s_registry_count; ++i) {
-         if (strcmp(s_registry[i].desc->name, name) == 0) {
-             return uxTaskGetStackHighWaterMark(s_registry[i].handle);
-         }
-     }
-     return -1;
- }
- 
- /**
-  * @brief Auto-load all services via linker-collected registry pointers.
-  */
- static void service_registry_autoload(void)
- {
-     for (const service_desc_t **p = __start_svc_registry; p < __stop_svc_registry; ++p) {
-         service_registry_register(*p);
-     }
- }
- 
- /**
-  * @brief Constructor hook that runs before app_main.
-  */
- __attribute__((constructor))
- static void service_registry_init_ctor(void)
- {
-     service_registry_autoload();
- }
- 
+int32_t service_registry_get_stack_usage(const char *name){
+    for (size_t i = 0; i < s_registry_count; ++i) {
+        if (strcmp(s_registry[i].desc->name, name) == 0) {
+            return uxTaskGetStackHighWaterMark(s_registry[i].handle);
+        }
+    }
+    return -1;
+}
+
+static void service_registry_autoload(void)
+{
+    if (!__start_svc_registry || !__stop_svc_registry) return;
+
+    for (const service_desc_t **p = __start_svc_registry; p < __stop_svc_registry; ++p) {
+        service_registry_register(*p);
+    }
+}
+
+// hock
+__attribute__((constructor))
+static void service_registry_init_ctor(void)
+{
+    service_registry_autoload();
+}
