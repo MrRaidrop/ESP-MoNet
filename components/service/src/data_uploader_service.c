@@ -13,6 +13,8 @@
 #include "monet_hal/camera_hal.h"
 #include "service/ble_service.h"
 #include "service/wifi_service.h"
+#include "monet_core/service_registry.h"
+
 
 #define TAG "DATA_UPLOADER"
 #define STACK_SIZE 4096
@@ -118,6 +120,11 @@ static void jpeg_uploader_task(void* pv)
     }
 }
 
+/**
+ * @brief Legacy entry point for uploader tasks, for testing purposes.
+ * @note Prefer using `service_registry` with get_*_uploader_service()
+ */
+
 void data_uploader_service_start(void)
 {
 #ifdef CONFIG_UPLOAD_LIGHT_ENABLED
@@ -127,4 +134,52 @@ void data_uploader_service_start(void)
 #ifdef CONFIG_UPLOAD_JPEG_ENABLED
     xTaskCreate(jpeg_uploader_task, "jpeg_uploader_task", STACK_SIZE, NULL, TASK_PRIORITY, NULL);
 #endif
+}
+
+/**
+ * @brief Descriptor for JPEG uploader service (uploads EVENT_SENSOR_JPEG)
+ */
+static void jpeg_service_entry(void *arg) { jpeg_uploader_task(arg); }
+
+const service_desc_t data_uploader_jpeg_desc = {
+    .name        = "jpeg_uploader",
+    .task_fn     = jpeg_service_entry,
+    .task_name   = "jpeg_uploader_task",
+    .stack_size  = STACK_SIZE,
+    .priority    = TASK_PRIORITY,
+    .role        = SERVICE_ROLE_SUBSCRIBER,
+    .topics      = (const msg_topic_t[]){ EVENT_SENSOR_JPEG, MSG_TOPIC_END }
+};
+
+/**
+ * @brief Descriptor for Light uploader service (uploads EVENT_SENSOR_LIGHT)
+ */
+static void light_service_entry(void *arg) { light_uploader_task(arg); }
+
+const service_desc_t data_uploader_light_desc = {
+    .name        = "light_uploader",
+    .task_fn     = light_service_entry,
+    .task_name   = "light_uploader_task",
+    .stack_size  = STACK_SIZE,
+    .priority    = TASK_PRIORITY,
+    .role        = SERVICE_ROLE_SUBSCRIBER,
+    .topics      = (const msg_topic_t[]){ EVENT_SENSOR_LIGHT, MSG_TOPIC_END }
+};
+
+/**
+ * @brief Get the service descriptor for JPEG uploader
+ * @return Pointer to `service_desc_t` for registration
+ */
+const service_desc_t* get_jpeg_uploader_service(void)
+{
+    return &data_uploader_jpeg_desc;
+}
+
+/**
+ * @brief Get the service descriptor for Light uploader
+ * @return Pointer to `service_desc_t` for registration
+ */
+const service_desc_t* get_light_uploader_service(void)
+{
+    return &data_uploader_light_desc;
 }

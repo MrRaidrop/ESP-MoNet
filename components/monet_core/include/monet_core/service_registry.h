@@ -43,11 +43,10 @@
   * e.g : light sensor/temp_hum sensor is publisher, ble/http is subscriber
   */
  typedef enum {
+    SERVICE_ROLE_NONE = 0,   /**< Not pub not sub, e.g. wifi_service */
     SERVICE_ROLE_PUBLISHER,  /**< Sensors or data sources (e.g., light, camera) that publish messages */
     SERVICE_ROLE_SUBSCRIBER  /**< Services (e.g., UART, BLE, HTTP) that consume messages via msg_bus */
 } service_role_t;
-
-
 
  /**
   * @brief Structure that describes a service to be managed by the registry.
@@ -62,7 +61,7 @@
      uint32_t stack_size;            /**< Stack size in bytes */
      UBaseType_t priority;           /**< Task execution priority */
      /* NEW ↓↓↓ */
-     service_role_t    role;              ///< publisher or subscriber
+     service_role_t    role;              ///< publisher or subscriber or none
      const msg_topic_t *topics;           
       /**< NULL-terminated list of topics to subscribe to, used only if role is SUBSCRIBER */
  } service_desc_t;

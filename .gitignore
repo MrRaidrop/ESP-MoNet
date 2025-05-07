@@ -13,3 +13,4 @@ sdkconfig.old
 *.log
 *.pyc
 __pycache__/
+*.jpg

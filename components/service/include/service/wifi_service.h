@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "monet_core/service_registry.h" 
+
 /**
  * @brief Start Wi-Fi as station using provided SSID and password.
  *        This wraps the underlying Wi-Fi manager (e.g., wifi_init_sta).
@@ -46,6 +48,19 @@ bool wifi_service_wait_connected(uint32_t timeout_ms);
  * @return true if Wi-Fi connected successfully, false if timeout or failure occurred
  */
 bool wifi_service_start_and_wait(const char *ssid, const char *pwd, uint32_t timeout_ms);
+
+/**
+ * @brief Retrieve the descriptor for the Wi-Fi service.
+ *
+ * This function returns a pointer to the statically defined
+ * `service_desc_t` for the Wi-Fi service, which can be passed to
+ * `service_registry_register()` or used in fallback scenarios where
+ * `SERVICE_REGISTER()` is not available.
+ *
+ * @return const service_desc_t* Pointer to Wi-Fi service descriptor.
+ */
+const service_desc_t* get_wifi_service(void);
+
 #ifdef __cplusplus
 }
 #endif

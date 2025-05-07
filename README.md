@@ -23,8 +23,8 @@ A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The
 | Version                           | ETA     | Key Changes                                                                                                                                                                                                                                        | Delivery Criteria                                                                                                |
 | --------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | **v0.7 — Uploader Refactor**      | 2025‑05 | • Split `data_uploader_service` into multiple sinks: `http_uploader`, `ble_uploader`, `cache_sink`<br>• **Only JPEG handler owns and returns `camera_fb_t`**<br>• Add `.release()` callback to `msg_t` for clean resource lifecycle management     | \* JPEG frame leak fixed<br>\* UART/HTTP/Cache all decouple from each other<br>\* Memory-safe under stress test  |
-| **v0.8 — Kconfig Migration**      | 2025‑05 | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config                                      | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h` • Use Router table to control sub-pub logic, implement K-config for this                 |
-| **v0.9 — BLE Service Refinement** | 2025‑05 | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc                                    | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible                     |
+| **v0.8 — Kconfig Migration**      | 2025‑05 | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config                                      | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h` • Use Router table to control sub-pub logic, implement K-config for this  • use sdkconfig.default to replace current sdkconfig structure                |
+| **v0.9 — BLE Service & OTA Refinement** | 2025‑05 | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc                                    | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible \* OTA rollback<br>                    |
 | **v1.0 — Quality Release**        | 2025‑06 | • **≥ 80 % unit test coverage** (cache, encoder, msg\_bus, registry, BLE API)<br>• GitHub Actions: build + `ctest` + `clang-format` all pass<br>• Public firmware binary + 2‑min demo video<br>• Complete bilingual docs and architecture diagrams | \* CI passes all checks<br>\* CHANGELOG & release notes finalized<br>\* README features embedded demo video link |
 
 ---
@@ -103,7 +103,7 @@ This guide will help you build, configure, and run the ESP-MoNet project on your
 
 - ESP-IDF v5.0 or higher installed and configured
 - [How to get ESP-IDF](https://docs.espressif.com/projects/vscode-esp-idf-extension/en/latest/)
-- Your ESP32-S3 DevKit board (e.g. Freenova ESP32-S3 with PSRAM)
+- Your ESP32-S3 DevKit board (e.g. Freenova ESP32-S3 with PSRAM, if camera not used, any esp32s3 board will be good)
 - A USB cable and access to serial terminal (e.g. `screen`, `minicom`, or `idf.py monitor`)
 
 ## Quick Setup
@@ -150,7 +150,7 @@ idf.py build flash monitor
 ## Optional: Verify Functionality
 
 - **BLE**: Connect via **nRF Connect**, observe sensor notify (e.g. `light_value`, `jpeg_frame_hash`)
-- **UART**: Run `screen /dev/ttyUSB0 115200` or use serial terminal to see logs
+- **UART**: Run `screen /dev/ttyUSB0 921600` or use serial terminal to see logs
 - **Wi-Fi**: ESP32 will upload JPEG + sensor data to your configured HTTPS server
 
 ## What’s pre-configured in sdkconfig.default
@@ -164,6 +164,7 @@ idf.py build flash monitor
 | Logging        | Info level, tag filtering enabled           |
 | Services       | All core modules enabled (msg_bus, cache)   |
 
+// Cameara module can be removed if you don't want to use it
 ---
 
 Ready to go? Plug in your board, flash it, and watch the data flow.
