@@ -27,7 +27,7 @@ extern "C" {
  * It creates an RX queue of size 5 and launches a FreeRTOS task that waits
  * for UART input and pushes it to the queue.
  */
-void my_uart_hal_init(void);
+void monet_uart_hal_init(void);
 
 /**
  * @brief Get the UART RX queue.
@@ -37,14 +37,24 @@ void my_uart_hal_init(void);
  *
  * @return QueueHandle_t The internal receive queue.
  */
-QueueHandle_t my_uart_hal_get_rx_queue(void);
+QueueHandle_t monet_uart_hal_get_rx_queue(void);
 
 /**
  * @brief Write a string to the UART port, followed by CRLF.
  *
  * @param str Null-terminated string to transmit.
  */
-void my_uart_hal_write_string(const char *str);
+void monet_uart_hal_write_string(const char *str);
+
+
+/**
+ * @brief Write a byte array to the UART port, and print the length.
+ *
+ * @param data Pointer to the byte array to transmit.
+ * @param length Number of bytes to transmit.
+ */
+void monet_uart_hal_write_bytes(const uint8_t *data, size_t length);
+
 
 #ifdef __cplusplus
 }

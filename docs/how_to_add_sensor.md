@@ -11,16 +11,29 @@ title: How to Add a Sensor
 # How to Add a New Sensor
 
 This guide walks you through integrating a new sensor (e.g., DHT22 for temperature/humidity) into the system.  
-The project uses a clean, modular structure — all sensors follow the **3-step rule**.
+Because this is a modular architecture, you can do this in **3 simple steps** — without modifying any other services (UART, BLE, HTTP, etc.).
 
 ---
 
-## 1. Create a HAL Driver
+## System Flow
 
-**Location:** `components/my_hal/dht22_hal.[ch]`
+```mermaid
+graph TD
+    HAL[DHT22 HAL] --> SERVICE[DHT22 Service]
+    SERVICE --> BUS[Message Bus]
+    BUS --> UART[UART Sink]
+    BUS --> BLE[BLE Sink]
+    BUS --> HTTP[Uploader]
+```
+
+---
+
+## Step 1: Create a HAL Driver
+
+**Location:** `components/monet_hal/dht22_hal.[ch]`
 
 ```c
-/// dht22_hal.h
+// components/monet_hal/include/monet_hal/dht22_hal.h
 
 /**
  * @brief Initialize DHT22 GPIO and timing
@@ -37,49 +50,87 @@ esp_err_t dht22_hal_init(void);
 esp_err_t dht22_hal_read(float *out_temp_deg_c, float *out_humidity_pct);
 ```
 
-The HAL should only handle **raw hardware access** (GPIO, timing, etc). Return stub values if testing without sensor.
+The HAL should only handle **raw hardware access** (GPIO, timing, etc).  
+If you're testing without hardware, return dummy values (e.g., 25.0°C, 60%).
+the example file is already in the right position for reference
 
 ---
 
-## 2. Add a Sensor Service
+## Step 2: Add a Sensor Service (Publisher)
 
 **Location:** `components/service/dht22_service.[ch]`
 
+This service polls your sensor and **publishes messages via the system bus**.  
+It is automatically started by the system after registration — **no need to manually create a task**.
+
+**But you still need to modify msg_t struct from monet_core/msg_bus.h to support new type of data structure to fit your specific need. This repo have already cover data type like int, float, temp_hum, imu, jpeg frame buffer, and you can use uint8_t raw data as you want in initial case.**
+
+
 ```c
-void dht22_service_start(void)
+#include "service/dht22_service.h"
+#include "monet_hal/dht22_hal.h"
+#include "monet_core/msg_bus.h"
+#include "monet_core/service_registry.h"
+#include "utils/log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+static void dht22_task(void *param)
 {
     if (dht22_hal_init() != ESP_OK) {
-        LOGE("DHT22_SERVICE", "Failed to init HAL");
+        LOGE("DHT22_SERVICE", "Init failed");
+        vTaskDelete(NULL);
         return;
     }
 
-    xTaskCreate([](void *) {
-        while (1) {
-            float temp = 0, hum = 0;
-            if (dht22_hal_read(&temp, &hum) == ESP_OK) {
-                msg_t msg = {
-                    .topic = EVENT_SENSOR_TEMP,
-                    .ts_ms = esp_log_timestamp(),
-                };
-                snprintf(msg.data.json_str, sizeof(msg.data.json_str),
-                         "{\"type\":\"temp\",\"t\":%.2f,\"h\":%.2f}", temp, hum);
-                msg_bus_publish(&msg);
-            }
-            vTaskDelay(pdMS_TO_TICKS(10000));
+    while (1) {
+        float t, h;
+        if (dht22_hal_read(&t, &h) == ESP_OK) {
+            msg_t msg = {
+                .topic = EVENT_SENSOR_TEMP,
+                .ts_ms = esp_log_timestamp()
+            };
+            msg.data.temp_hum.temperature = t;
+            msg.data.temp_hum.humidity = h;
+            msg_bus_publish(&msg);
         }
-    }, "dht22_task", 4096, NULL, 5, NULL);
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Polling interval in milliseconds, modify as needed
+    }
+}
+
+static const service_desc_t dht22_service_desc = {
+    .name       = "dht22_service",
+    .task_fn    = dht22_task,
+    .task_name  = "dht22_task",
+    .stack_size = 4096,
+    .priority   = 5,
+    .role       = SERVICE_ROLE_PUBLISHER,
+    .topics     = NULL                      // publisher doesn't subscribe
+};
+
+const service_desc_t* get_dht22_service(void)
+{
+    return &dht22_service_desc;
 }
 ```
 
-You can publish either `.json_str` or raw `.value` data depending on your message model.
+In `main.c`, just register the service:
+
+```c
+service_registry_register(get_dht22_service());
+```
+
+The system will create the task and route messages to all subscribers (UART, BLE, HTTP...) **without any hardcoding**.
+
+If you want to dive into group control, like temp to uart and ble, light and camera to http and uart, feel free to read and modify the code in msg_bus and service_registry, there will be a new documentation talk about it in later version.
 
 ---
 
-## 3. Add to CMake
+## Step 3: Add to CMake
 
-Ensure you edit `CMakeLists.txt`:
+Make sure the source files are listed in your build:
 
-- In `components/my_hal/CMakeLists.txt`, add:
+- In `components/monet_hal/CMakeLists.txt`, add:
   ```cmake
   srcs += src/dht22_hal.c
   ```
@@ -91,12 +142,9 @@ Ensure you edit `CMakeLists.txt`:
 
 ---
 
-## 4. Extend JSON Encoding
+## Step 4: Extend JSON Encoding (Optional)
 
-To support cloud upload for your new sensor,
-you no longer need to snprintf() JSON strings manually.
-
-Instead, the system uses a centralized encoder:
+To upload sensor data to the cloud or mobile apps, the system uses a centralized JSON encoder:
 
 ```c
 #include "codec/json_encoder.h"
@@ -107,11 +155,9 @@ json_encoder_encode(&msg, json_buf, sizeof(json_buf));
 
 To support your sensor:
 
-Add a new topic (e.g. EVENT_SENSOR_TEMP) in msg_bus.h
-
-Extend the msg_t union with a matching data struct (e.g. temp_hum)
-
-Add a new case block in json_encoder_encode() in json_encoder.c:
+1. Add a new topic (e.g., `EVENT_SENSOR_TEMP`) in `msg_bus.h`
+2. Extend the `msg_t` union with a matching structure (e.g., `temp_hum`)
+3. Add a case in `json_encoder_encode()`:
 
 ```c
 case EVENT_SENSOR_TEMP:
@@ -123,8 +169,7 @@ case EVENT_SENSOR_TEMP:
     return true;
 ```
 
-No further change is needed in uploader or cache,
-your new sensor will be automatically handled by both Wi-Fi and BLE.
+No change needed in BLE or HTTP uploader — they automatically use the encoder.
 
 ---
 
@@ -133,60 +178,22 @@ your new sensor will be automatically handled by both Wi-Fi and BLE.
 ```json
 {
   "type": "temp",
-  "t": 24.65,
-  "h": 52.1,
+  "temperature": 24.65,
+  "humidity": 52.1,
   "ts": 3432943
 }
 ```
 
 ---
 
-## Optional BLE Notification
+## Done!
 
-To notify mobile devices via BLE, just:
+You’ve added a new sensor in just:
 
-1. Subscribe to `EVENT_SENSOR_TEMP` in `ble_service.c`
-2. Format & call `notify_raw()` with the same JSON string
+- 1 HAL file
+- 1 Service file
+- 2 lines of registration
+- (optional) 1 line in json_encoder.c
 
----
-
-
----
-
-## 5.Modify `msg_t` Structure
-
-To support new sensor data types (like temperature and humidity), you should update the `msg_t` definition in `core/msg_bus.h`:
-
-```c
-typedef struct {
-    uint32_t ts_ms;
-    union {
-        struct {
-            float t;  ///< temperature in °C
-            float h;  ///< relative humidity %
-        } temp;
-
-        struct {
-            int adc_value;
-        } light;
-
-        struct {
-            camera_fb_t *fb;
-        } jpeg;
-
-        // Add more types here as needed
-    } data;
-    event_topic_t topic;
-} msg_t;
-```
-
-
-## OK, Done!
-
-You’ve added a new sensor in just **3 files + 2 CMake lines**.  
-To add more (e.g. CO₂, PIR, gas, tilt), just repeat the pattern:
-
-- HAL driver (`my_hal/`)
-- Service module (`service/`)
-- JSON/Notify integration (optional)
-
+No BLE, HTTP, or UART modification is needed.  
+Want to add more sensors? Just repeat this pattern!

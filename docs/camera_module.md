@@ -1,7 +1,7 @@
 
 ## Camera Module Deep Dive
 
-Zero‑Copy, Adaptive & Offline‑Resilient
+Ultra‑Lean, Wi‑Fi‑Aware & Drop‑Safe
 
 *(Drop‑in for any OV2640‑based ESP32‑S3 board — tested on Freenove DevKit)*
 
@@ -36,6 +36,10 @@ if (!success) cache_push_blob(fb->buf, fb->len);
 esp_camera_fb_return(fb);  // release here
 ```
 
+> **Note**: In v0.7, `msg_t` will include an optional `release()` callback.  
+This allows each sender (e.g. camera) to publish raw pointers without worrying about who will free them.
+
+
 ### 4. Cache Flush
 ```c
 cache_flush_once_with_sender_ex(http_post_image);
@@ -57,8 +61,8 @@ cache_flush_once_with_sender_ex(http_post_image);
 
 | Frame Size      | PSRAM Peak (before/after) | FPS (‑70 dBm RSSI) |
 |------------------|----------------------------|---------------------|
-| XGA 1024×768     | 680 KB → **340 KB**        | ~0.9 FPS            |
-| SVGA 800×600     | 450 KB → **230 KB**        | ~1.1 FPS            |
+| VGA 640×480     | ~300 KB → 150 KB        | ~1.5 FPS            |
+| QVGA 320×240     | ~90 KB → 45 KB        | ~2.5 FPS            |
 
 > Measured with `heap_caps_get_info(MALLOC_CAP_SPIRAM)` on ESP-IDF v5.4
 
@@ -72,5 +76,5 @@ cache_flush_once_with_sender_ex(http_post_image);
 
 ---
 
-> **TL;DR** – The camera module captures once, copies zero, adapts to Wi‑Fi in real time, and never loses a frame even if the router goes down.  
-Plug in, subscribe, profit
+> **TL;DR** — The camera service publishes raw JPEG frames over msg_bus, adapts its FPS to RSSI, and buffers uploads when offline — all with zero memory copies.
+Modular, efficient, and resilient. Just plug in your handler.

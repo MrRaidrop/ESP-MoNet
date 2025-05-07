@@ -1,4 +1,3 @@
-// monet_core/include/monet_core/msg_bus.h
 #ifndef MSG_BUS_H_
 #define MSG_BUS_H_
 
@@ -8,7 +7,6 @@
 #include <stdbool.h>
 #include "monet_hal/camera_hal.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,24 +15,23 @@ extern "C" {
  * @brief Enumeration of supported message topics on the bus.
  *
  * Each topic represents a logical channel for publishing/subscribing sensor or system events.
- * These can be extended as needed for new services.
+ * Topics can be extended for new sensors or control systems.
  */
 typedef enum {
-    EVENT_SENSOR_TEMP,       ///< Your sensor here
-    EVENT_SENSOR_LIGHT,      ///< Light sensor data (ADC)
-    EVENT_SENSOR_UART,       ///< Structured UART payload from external sensor
-    EVENT_SENSOR_JPEG,       ///< JPEG image captured from camera
-    EVENT_SENSOR_MAX,         ///< Sentinel value for bounds checking
-    EVENT_SENSOR_ALL = 0xFF  ///< All topics (for internal use)
+    EVENT_SENSOR_TEMP,           ///< Temperature and humidity sensor
+    EVENT_SENSOR_LIGHT,          ///< Light sensor data (ADC)
+    EVENT_SENSOR_UART,           ///< Structured UART payload from external sensor
+    EVENT_SENSOR_JPEG,           ///< JPEG image captured from camera
+
+    EVENT_SENSOR_MAX,            ///< Sentinel value for topic range
+
+    EVENT_GROUP_SENSOR = 0x1000  ///< Wildcard group ID for all sensor topics
 } msg_topic_t;
 
 #define MSG_JPEG_BUF_SIZE 32768  ///< Maximum size of JPEG buffer in bytes
 
 /**
- * @brief Message payload structure supporting multiple data types.
- *
- * This union allows sharing a common bus structure while enabling flexibility.
- * For each topic, the payload format must be predefined and respected.
+ * @brief Message structure used to exchange data across services.
  */
 typedef struct {
     msg_topic_t topic;   ///< Logical topic category
@@ -58,41 +55,58 @@ typedef struct {
         } raw;
 
         struct {
-            float accel[3];
+            float accel[3];     ///< Accelerometer and gyroscope data, I have one in my stock
             float gyro[3];
-        } imu;
+        } imu;                   
 
         struct {
-            camera_fb_t *fb;
+            camera_fb_t *fb;     ///< Frame buffer pointer for camera images
         } jpeg;
-        // This is definatily not enough for a full image, but we can add package splicing later.
     } data;
 
 } msg_t;
 
 /**
- * @brief Publishes a message to all subscribers of the specified topic.
+ * @brief Publish a message to the corresponding topic's subscribers.
  *
- * The message is copied into the subscribers' queues. The caller should
- * construct and fill a `msg_t` object before calling.
+ * The message is copied to all queues subscribed to this specific topic
+ * and to any group-level subscriber (e.g. EVENT_GROUP_SENSOR).
  *
- * @param msg Pointer to the message to publish
+ * @param msg Pointer to the message object to broadcast
  */
 void msg_bus_publish(const msg_t* msg);
 
 /**
- * @brief Subscribes a FreeRTOS queue to receive messages of a specific topic.
+ * @brief Subscribe a queue to receive messages for a specific topic.
  *
- * Multiple queues can subscribe to a topic (up to internal limits).
- *
- * @param topic Topic to subscribe to
- * @param queue A FreeRTOS queue created by the caller to receive `msg_t`
- * @return true on success, false if maximum subscribers reached
+ * @param topic Specific topic to subscribe to
+ * @param queue Queue handle that will receive `msg_t`
+ * @return true if successfully subscribed, false otherwise
  */
 bool msg_bus_subscribe(msg_topic_t topic, QueueHandle_t queue);
 
+/**
+ * @brief Subscribe a queue to receive all messages within a topic group.
+ *
+ * For example, subscribing to EVENT_GROUP_SENSOR will receive all sensor-related events.
+ * This allows transport services (UART, BLE, etc.) to be sink-only modules without editing
+ * per-sensor logic.
+ *
+ * @param group_id Identifier of the event group (e.g., EVENT_GROUP_SENSOR)
+ * @param queue Queue handle to receive messages
+ * @return true if successfully added, false otherwise
+ */
+bool msg_bus_subscribe_group(uint16_t group_id, QueueHandle_t queue);
 
-bool msg_bus_subscribe_any(QueueHandle_t q); 
+/**
+ * @brief Legacy fallback: Subscribe to all topics regardless of group.
+ *
+ * Should only be used for diagnostic/debugging purposes.
+ *
+ * @param q Queue to receive all traffic
+ * @return true on success, false if registration fails
+ */
+bool msg_bus_subscribe_any(QueueHandle_t q);
 
 #ifdef __cplusplus
 }

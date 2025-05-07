@@ -4,50 +4,28 @@
 
 A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, an ADC-based light sensor (you can easily add your own), and **BLE GATT-based communication**. Future support for MQTT is also planned.
 
-[How to Add a Sensor](#how-to-add-a-sensor)
+[How to Add a Sensor](docs/how_to_add_sensor.md)
 
-[![BLE Module CI](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/actions/workflows/ci.yml/badge.svg)](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/actions)
-
----
-
-## Why This Repo
-
-- Modular Architecture 
-Clean separation into **HAL / Core / Service / Net** layers. Every module is plug-and-play—easy to remove, replace, or extend. Comes with a complete [sensor integration guide](https://mrraidrop.github.io/ESP-MoNet/#/how_to_add_sensor).
-
-- Event-Driven Message Bus
-Fully decoupled, many-to-many publish/subscribe architecture—more flexible than direct queues and ideal for scalable embedded design.
-
-- Secure OTA + HTTPS  
-Out-of-the-box secure OTA update system, with future support for AWS IoT Jobs.
-
-- CI-Ready Testing 
-Includes a BLE unit test example, and is designed for integration with `idf.py build` in CI pipelines.
-
-- Dual-Channel Upload  
-Automatic failover between Wi‑Fi and BLE. RAM cache ensures no data loss during disconnections—frames are cached and retried seamlessly.
-
-- Bilingual Docs + Mermaid Diagrams  
-English and Chinese documentation with rich Mermaid diagrams. Friendly for open-source contributors worldwide.
+[![Module CI](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/actions/workflows/ci.yml/badge.svg)](https://github.com/MrRaidrop/esp32_ble_mqtt_https_sensors/actions)
 
 ---
 
 ## Releases
-| Version | Date | Highlights |
-|---------|------|------------|
-| v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs |
+| Version | Date       | Highlights                                                                                                                                                                                                                  |
+| ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs                                                                                                                                                                      |
+| v0.6    | 2025‑05‑07 | Introduced **`service_registry`**:<br>• All services now registered via `SERVICE_REGISTER()` macro<br>• `app_main()` is simplified to a single `service_registry_init()` call<br>• Modular sensor integration fully enabled |
 
 ---
 
 ## Milestone Roadmap
 
-| Version                             | ETA       | Key Changes                                                                                                                                                                     | Delivery Criteria                                                                                       |
-|-------------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| **v0.7 — Service Registry**         | 2025‑05   | • Introduce **`service_registry`** mechanism<br>• All `*_service_start()` functions registered via `SERVICE_REGISTER()` macro<br>• `app_main()` reduced to `service_registry_init()` call<br>• README and *How to Add Sensor* updated | \* Firmware builds and runs correctly<br>\* All core services (`light`, `camera`, `DHT22`, `uploader`, `UART`, `BLE`) launched via registry<br>\* Architecture diagram updated |
-| **v0.8 — Kconfig Migration**        | 2025‑05   | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h`                           |
-| **v0.9 — BLE Service Refinement**   | 2025‑05   | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible                             |
-| **v1.0 — Quality Release**          | 2025‑06   | • **≥ 80 % unit test coverage** (cache, encoder, msg_bus, registry, BLE API)<br>• GitHub Actions: build + `ctest` + `clang-format` all pass<br>• Public firmware binary + 2‑min demo video<br>• Complete bilingual docs and architecture diagrams | \* CI passes all checks<br>\* CHANGELOG & release notes finalized<br>\* README features embedded demo video link          |
-
+| Version                           | ETA     | Key Changes                                                                                                                                                                                                                                        | Delivery Criteria                                                                                                |
+| --------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **v0.7 — Uploader Refactor**      | 2025‑05 | • Split `data_uploader_service` into multiple sinks: `http_uploader`, `ble_uploader`, `cache_sink`<br>• **Only JPEG handler owns and returns `camera_fb_t`**<br>• Add `.release()` callback to `msg_t` for clean resource lifecycle management     | \* JPEG frame leak fixed<br>\* UART/HTTP/Cache all decouple from each other<br>\* Memory-safe under stress test  |
+| **v0.8 — Kconfig Migration**      | 2025‑05 | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config                                      | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h` • Use Router table to control sub-pub logic, implement K-config for this                 |
+| **v0.9 — BLE Service Refinement** | 2025‑05 | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc                                    | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible                     |
+| **v1.0 — Quality Release**        | 2025‑06 | • **≥ 80 % unit test coverage** (cache, encoder, msg\_bus, registry, BLE API)<br>• GitHub Actions: build + `ctest` + `clang-format` all pass<br>• Public firmware binary + 2‑min demo video<br>• Complete bilingual docs and architecture diagrams | \* CI passes all checks<br>\* CHANGELOG & release notes finalized<br>\* README features embedded demo video link |
 
 ---
 
@@ -65,9 +43,10 @@ English and Chinese documentation with rich Mermaid diagrams. Friendly for open-
 - **Message Bus `EVENT_SENSOR_JPEG` for binary frame pipeline**
 - **Zero-copy JPEG transmission (`camera_fb_t*` passthrough, no memcpy)**
 - **Offline binary JPEG ring buffer with auto-retry**
-- **Dynamic FPS: auto-adjusts based on Wi-Fi signal (RSSI)**
+- **Centralized Service Registry**: one-line macro registration via `SERVICE_REGISTER()`, auto-started on boot
 - Future-ready: designed for MQTT and custom sensors
 - [Camera Module Deep Dive](docs/camera_module.md)
+- Bilingual Docs + Mermaid Diagrams
 
 ---
 
@@ -76,11 +55,11 @@ English and Chinese documentation with rich Mermaid diagrams. Friendly for open-
 ```
 project-root
 ├── components/
-│   ├── hal/                 # Hardware abstraction layer (ADC, UART, Wi-Fi)
-│   │   ├── include/hal/*.h
+│   ├── monet_hal/                 # Hardware abstraction layer (ADC, UART, Wi-Fi)
+│   │   ├── include/monet_hal/*.h
 │   │   └── src/*.c
-│   ├── core/                # Core messaging infrastructure (e.g., msg_bus)
-│   │   ├── include/core/*.h
+│   ├── monet_core/                # Core messaging infrastructure (e.g., msg_bus)
+│   │   ├── include/monet_core/*.h
 │   │   └── src/*.c
 │   ├── net/                 # Networking (HTTPS POST, future MQTT)
 │   │   ├── include/net/*.h
@@ -112,10 +91,8 @@ project-root
 
 ##  System Architecture
 
-> Click the link below to view the interactive system diagram with Mermaid rendering support:  
+> Click the link below to view the interactive system diagram:  
 👉 [System Architecture Diagram - GitHub Pages](https://mrraidrop.github.io/ESP-MoNet/)
-
-> This modular architecture enables flexible service composition, better testing, and future support for more transports (e.g., MQTT).
 
 ---
 # Getting Started
@@ -125,6 +102,7 @@ This guide will help you build, configure, and run the ESP-MoNet project on your
 ## Prerequisites
 
 - ESP-IDF v5.0 or higher installed and configured
+- [How to get ESP-IDF](https://docs.espressif.com/projects/vscode-esp-idf-extension/en/latest/)
 - Your ESP32-S3 DevKit board (e.g. Freenova ESP32-S3 with PSRAM)
 - A USB cable and access to serial terminal (e.g. `screen`, `minicom`, or `idf.py monitor`)
 
@@ -299,7 +277,7 @@ The upload system requires no other changes — just define the message and form
 
 | Category       | Issue Description                                 | Improvement Direction                                | Status        |
 |----------------|----------------------------------------------------|------------------------------------------------------|---------------|
-| Architecture   | No centralized service lifecycle manager           | Add `service_registry` + `app_init()` startup logic  | ⏳ In Progress |
+| Architecture   | No centralized service lifecycle manager           | Add `service_registry` + `app_init()` startup logic  | ✅ Done |
 | Config System  | Configs hardcoded in `.c` files                    | Use `Kconfig` + NVS runtime override                 | 🔜 Planned     |
 | Logging        | LOGI/W macros used, but no module-level control    | Introduce `LOG_MODULE_REGISTER` + per-module level   | ✅ Done     |
 | Unit Testing   | Only BLE utils tested in CI                        | Add test cases for `json_utils`, cache, uploader     | ⏳ In Progress |
@@ -325,266 +303,23 @@ The upload system requires no other changes — just define the message and form
 # How to Add a New Sensor
 
 This guide walks you through integrating a new sensor (e.g., DHT22 for temperature/humidity) into the system.  
-The project uses a clean, modular structure — all sensors follow the **3-step rule**.
+Because this is a modular architecture, you can do this in **3 simple steps** — without modifying any other services (UART, BLE, HTTP, etc.).
+
+> Click the link below to view the guide.
+👉 [docs/how_to_add_sensor](docs/how_to_add_sensor.md)
 
 ---
 
-## 1. Create a HAL Driver
-
-**Location:** `components/my_hal/dht22_hal.[ch]`
-
-```c
-/// dht22_hal.h
-
-/**
- * @brief Initialize DHT22 GPIO and timing
- */
-esp_err_t dht22_hal_init(void);
-
-/**
- * @brief Read temperature and humidity from DHT22 sensor
- * 
- * @param out_temp_deg_c Pointer to float storing temperature in °C
- * @param out_humidity_pct Pointer to float storing relative humidity in %
- * @return ESP_OK on success, ESP_FAIL on failure
- */
-esp_err_t dht22_hal_read(float *out_temp_deg_c, float *out_humidity_pct);
-```
-
-The HAL should only handle **raw hardware access** (GPIO, timing, etc). Return stub values if testing without sensor.
-
----
-
-## 2. Add a Sensor Service
-
-**Location:** `components/service/dht22_service.[ch]`
-
-```c
-void dht22_service_start(void)
-{
-    if (dht22_hal_init() != ESP_OK) {
-        LOGE("DHT22_SERVICE", "Failed to init HAL");
-        return;
-    }
-
-    xTaskCreate([](void *) {
-        while (1) {
-            float temp = 0, hum = 0;
-            if (dht22_hal_read(&temp, &hum) == ESP_OK) {
-                msg_t msg = {
-                    .topic = EVENT_SENSOR_TEMP,
-                    .ts_ms = esp_log_timestamp(),
-                };
-                snprintf(msg.data.json_str, sizeof(msg.data.json_str),
-                         "{\"type\":\"temp\",\"t\":%.2f,\"h\":%.2f}", temp, hum);
-                msg_bus_publish(&msg);
-            }
-            vTaskDelay(pdMS_TO_TICKS(10000));
-        }
-    }, "dht22_task", 4096, NULL, 5, NULL);
-}
-```
-
-You can publish either `.json_str` or raw `.value` data depending on your message model.
-
----
-
-## 3. Add to CMake
-
-Ensure you edit `CMakeLists.txt`:
-
-- In `components/my_hal/CMakeLists.txt`, add:
-  ```cmake
-  srcs += src/dht22_hal.c
-  ```
-
-- In `components/service/CMakeLists.txt`, add:
-  ```cmake
-  srcs += src/dht22_service.c
-  ```
-
----
-
-## 4. Extend JSON Encoding
-
-To support cloud upload for your new sensor,
-you no longer need to snprintf() JSON strings manually.
-
-Instead, the system uses a centralized encoder:
-
-```c
-#include "codec/json_encoder.h"
-
-char json_buf[256];
-json_encoder_encode(&msg, json_buf, sizeof(json_buf));
-```
-
-To support your sensor:
-
-Add a new topic (e.g. EVENT_SENSOR_TEMP) in msg_bus.h
-
-Extend the msg_t union with a matching data struct (e.g. temp_hum)
-
-Add a new case block in json_encoder_encode() in json_encoder.c:
-
-```c
-case EVENT_SENSOR_TEMP:
-    snprintf(out_buf, buf_size,
-        "{ \"type\": \"temp\", \"temperature\": %.2f, \"humidity\": %.2f, \"ts\": %" PRIu32 " }",
-        msg->data.temp_hum.temperature,
-        msg->data.temp_hum.humidity,
-        msg->ts_ms);
-    return true;
-```
-
-No further change is needed in uploader or cache,
-your new sensor will be automatically handled by both Wi-Fi and BLE.
-
----
-
-## Example JSON Output
-
-```json
-{
-  "type": "temp",
-  "t": 24.65,
-  "h": 52.1,
-  "ts": 3432943
-}
-```
-
----
-
-## Optional BLE Notification
-
-To notify mobile devices via BLE, just:
-
-1. Subscribe to `EVENT_SENSOR_TEMP` in `ble_service.c`
-2. Format & call `notify_raw()` with the same JSON string
-
----
-
-
----
-
-## 5.Modify `msg_t` Structure
-
-To support new sensor data types (like temperature and humidity), you should update the `msg_t` definition in `core/msg_bus.h`:
-
-```c
-typedef struct {
-    uint32_t ts_ms;
-    union {
-        struct {
-            float t;  ///< temperature in °C
-            float h;  ///< relative humidity %
-        } temp;
-
-        struct {
-            int adc_value;
-        } light;
-
-        struct {
-            camera_fb_t *fb;
-        } jpeg;
-
-        // Add more types here as needed
-    } data;
-    event_topic_t topic;
-} msg_t;
-```
-
-
-## OK, Done!
-
-You’ve added a new sensor in just **3 files + 2 CMake lines**.  
-To add more (e.g. CO₂, PIR, gas, tilt), just repeat the pattern:
-
-- HAL driver (`my_hal/`)
-- Service module (`service/`)
-- JSON/Notify integration (optional)
-
-
-
----
 
 ## Camera Module Deep Dive
+
+> Click the link below to view the guide.
+👉 [docs/camera_module.md](docs/camera_module.md)
 
 Zero‑Copy, Adaptive & Offline‑Resilient
 
 *(Drop‑in for any OV2640‑based ESP32‑S3 board — tested on Freenove DevKit)*
 
-| Key Capability                  | How it Works                                                                                                                                         | Why it Matters                                               |
-|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| **Zero‑copy JPEG pipeline**    | `camera_fb_t*` is published on `msg_bus` → uploader task uses it directly → **one** `esp_camera_fb_return()`. No `memcpy()`.                        | • ≈ 50 % PSRAM saved<br>• Higher FPS<br>• Ready for streaming |
-| **Dynamic FPS / bandwidth adapt** | Each frame calls `wifi_get_rssi()` and maps RSSI → interval:<br>`>-60 dBm ➜ 3 FPS` ・ `-70…-60 dBm ➜ 1 FPS` ・ `<-70 dBm ➜ 0.2 FPS`                | • Auto‑throttles in weak Wi‑Fi<br>• Keeps link stable         |
-| **Offline binary cache**       | On `http_post_image()` failure, `cache_push_blob()` stores JPEG into PSRAM ring buffer. On reconnect, `cache_flush_once_with_sender_ex()` retries. | • No data loss during outages<br>• Seamless store‑and‑forward |
-| **Message‑bus decoupled**      | Any task can subscribe to `EVENT_SENSOR_JPEG`. Swap HTTP uploader with MQTT or SD‑card logger without touching camera code.                        | • Loose coupling<br>• Unit‑testable<br>• Easy to extend       |
-
----
-
-## Design Walk‑through
-
-### 1. Init  
-```c
-camera_hal_init();  // init OV2640, PSRAM, pins, quality, etc.
-```
-
-### 2. Capture Loop
-```c
-camera_fb_t *fb = camera_hal_capture();
-publish(EVENT_SENSOR_JPEG, fb);          // zero copy
-update_capture_interval();               // RSSI-based
-vTaskDelay(capture_interval_ms);
-```
-
-### 3. Upload Task
-```c
-success = http_post_image(fb->buf, fb->len);
-if (!success) cache_push_blob(fb->buf, fb->len);
-esp_camera_fb_return(fb);  // release here
-```
-
-### 4. Cache Flush
-```c
-cache_flush_once_with_sender_ex(http_post_image);
-```
-
----
-
-## Config Snippet (`utils/config.h`)
-
-```c
-#define CONFIG_CAPTURE_INTERVAL_MS   1000           // default (overridden dynamically)
-#define CONFIG_CACHE_ITEM_SIZE       (40*1024)      // max JPEG size
-#define CONFIG_CACHE_MAX_ITEMS       10             // number of cached frames
-```
-
----
-
-## Typical Resource Usage
-
-| Frame Size      | PSRAM Peak (before/after) | FPS (‑70 dBm RSSI) |
-|------------------|----------------------------|---------------------|
-| XGA 1024×768     | 680 KB → **340 KB**        | ~0.9 FPS            |
-| SVGA 800×600     | 450 KB → **230 KB**        | ~1.1 FPS            |
-
-> Measured with `heap_caps_get_info(MALLOC_CAP_SPIRAM)` on ESP-IDF v5.4
-
----
-
-## Next Milestones for Camera
-
-- MJPEG streaming via `multipart/x-mixed-replace`
-- SD‑Card fallback cache when PSRAM full
-- Per‑frame adaptive JPEG quality based on RSSI
-
----
-
-> **TL;DR** – The camera module captures once, copies zero, adapts to Wi‑Fi in real time, and never loses a frame even if the router goes down.  
-Plug in, subscribe, profit
-
----
 
 ##  License
 

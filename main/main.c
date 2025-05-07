@@ -62,9 +62,10 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    service_registry_register(get_light_sensor_service());
+    //service_registry_register(get_light_sensor_service());
 
     service_registry_register(get_camera_service());
+    service_registry_register(get_uart_service());
 
     service_registry_start_all();
     

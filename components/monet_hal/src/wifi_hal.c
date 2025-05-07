@@ -69,6 +69,7 @@ int wifi_get_rssi(void)
 {
     wifi_ap_record_t info;
     if (esp_wifi_sta_get_ap_info(&info) == ESP_OK) {
+        LOGI(TAG, "Connection RSSI: %d", info.rssi);
         return info.rssi;
     } else {
         return -100; 

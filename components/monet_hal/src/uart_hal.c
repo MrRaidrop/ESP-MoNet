@@ -11,13 +11,19 @@
 #include "utils/log.h"
 
 #define TAG "UART_HAL"
-#define UART_PORT_NUM      UART_NUM_1
-#define TXD_PIN            (GPIO_NUM_17)
-#define RXD_PIN            (GPIO_NUM_16)
-#define UART_BUF_SIZE      128
+
+#define TXD_PIN               (GPIO_NUM_47) // freenove ESP32-S3 WROOM DevKit setup
+#define RXD_PIN               (GPIO_NUM_21) // not too much pin out available this board
+
+#define UART_PORT_NUM         UART_NUM_1
+// #define TXD_PIN            (GPIO_NUM_17) // last version
+// #define RXD_PIN            (GPIO_NUM_16)
+#define UART_BUF_SIZE         128           // for RX buffer size
 
 static QueueHandle_t uart_queue = NULL;
 
+
+// internal function to handle UART RX task
 static void uart_rx_task(void *pvParameters)
 {
     uint8_t data[UART_BUF_SIZE];
@@ -35,10 +41,11 @@ static void uart_rx_task(void *pvParameters)
     }
 }
 
-void my_uart_hal_init(void)
+// UART initialization function, rx task creation for test uses
+void monet_uart_hal_init(void)
 {
     uart_config_t uart_config = {
-        .baud_rate = 115200,
+        .baud_rate = 921600,
         .data_bits = UART_DATA_8_BITS,
         .parity    = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
@@ -53,15 +60,23 @@ void my_uart_hal_init(void)
     xTaskCreate(uart_rx_task, "uart_rx_task", 4096, NULL, 10, NULL);
 }
 
-QueueHandle_t my_uart_hal_get_rx_queue(void)
+QueueHandle_t monet_uart_hal_get_rx_queue(void)
 {
     return uart_queue;
 }
 
-void my_uart_hal_write_string(const char *str)
+void monet_uart_hal_write_string(const char *str)
 {
     if (str) {
         uart_write_bytes(UART_PORT_NUM, str, strlen(str));
         uart_write_bytes(UART_PORT_NUM, "\r\n", 2);
+    }
+}
+
+void monet_uart_hal_write_bytes(const uint8_t *data, size_t length)
+{
+    if (data && length > 0) {
+        uart_write_bytes(UART_PORT_NUM, (const char *)data, length);
+        LOGI(TAG, "Sent %zu bytes", length);
     }
 }

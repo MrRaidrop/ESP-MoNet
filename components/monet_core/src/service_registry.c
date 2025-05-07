@@ -9,9 +9,9 @@
  #include "monet_core/msg_bus.h"
  #include "utils/log.h"
  
- #define MAX_SERVICES 16
+ #define MAX_SERVICES 16                 // for now
  #define TAG "SVC_REG"
- #define MSG_TOPIC_END EVENT_SENSOR_MAX
+ #define MSG_TOPIC_END EVENT_SENSOR_MAX  
  
  typedef struct {
      const service_desc_t *desc;
@@ -43,22 +43,30 @@
      LOGI(TAG, "Registered service: %s", desc->name);
  }
  
- static bool _auto_subscribe(const service_desc_t *desc, TaskHandle_t handle)
+ static bool _auto_subscribe(const service_desc_t *desc, QueueHandle_t *out_q)
  {
      if (desc->role != SERVICE_ROLE_SUBSCRIBER || !desc->topics) return true;
  
      QueueHandle_t q = xQueueCreate(4, sizeof(msg_t));
      if (!q) return false;
  
+     bool subscribed = false;
+ 
      for (const msg_topic_t *t = desc->topics; *t != MSG_TOPIC_END; ++t) {
-         if (!msg_bus_subscribe(*t, q)) {
-             LOGW(TAG, "Cannot subscribe %s to topic %d", desc->name, *t);
-         }
+         bool ok = (*t < EVENT_SENSOR_MAX) ?
+                   msg_bus_subscribe(*t, q) :
+                   msg_bus_subscribe_group(*t, q);
+ 
+         if (ok) subscribed = true;
+         else LOGW(TAG, "Cannot subscribe %s to topic %d", desc->name, *t);
      }
  
-     // Optional: pass the queue via task notification, global, or directly
-     // xTaskNotify(handle, (uint32_t)q, eSetValueWithOverwrite);
+     if (!subscribed) {
+         vQueueDelete(q);
+         return false;
+     }
  
+     *out_q = q;
      return true;
  }
  
@@ -69,21 +77,28 @@
              if (s_registry[i].state == SERVICE_STATE_RUNNING) {
                  return false;
              }
-             BaseType_t res = xTaskCreate(
-                 s_registry[i].desc->task_fn,
-                 s_registry[i].desc->task_name,
-                 s_registry[i].desc->stack_size,
-                 NULL, // You can pass the queue handle if needed
-                 s_registry[i].desc->priority,
-                 &s_registry[i].handle);
  
-             if (res == pdPASS) {
-                 if (!_auto_subscribe(s_registry[i].desc, s_registry[i].handle)) {
-                     LOGE(TAG, "Auto-subscribe failed for %s", name);
-                     vTaskDelete(s_registry[i].handle);
+             const service_desc_t *desc = s_registry[i].desc;
+             QueueHandle_t q = NULL;
+ 
+             // If it's a subscriber, auto-subscribe and get the queue
+             if (desc->role == SERVICE_ROLE_SUBSCRIBER) {
+                 if (!_auto_subscribe(desc, &q)) {
+                     LOGE(TAG, "Failed to auto-subscribe %s", name);
                      return false;
                  }
+             }
  
+             BaseType_t res = xTaskCreate(
+                 desc->task_fn,
+                 desc->task_name,
+                 desc->stack_size,
+                 (void *)q,  // q may be NULL if publisher
+                 desc->priority,
+                 &s_registry[i].handle
+             );
+ 
+             if (res == pdPASS) {
                  s_registry[i].state = SERVICE_STATE_RUNNING;
                  LOGI(TAG, "Started service: %s", name);
                  return true;

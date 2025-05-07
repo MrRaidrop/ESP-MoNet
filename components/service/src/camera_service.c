@@ -1,4 +1,3 @@
-// components/service/src/camera_service.c
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "service/camera_service.h"
@@ -17,7 +16,7 @@ static uint32_t dynamic_capture_interval_ms = 1000;
 
 static void update_capture_interval(void)
 {
-    int rssi = wifi_get_rssi();  // 你可以用 esp_wifi_sta_get_rssi()
+    int rssi = wifi_get_rssi();  // esp_wifi_sta_get_rssi() in wifi_hal.c
     if (rssi >= -60) {
         dynamic_capture_interval_ms = 333;
     } else if (rssi >= -70) {
@@ -58,6 +57,7 @@ static void camera_service_task(void *param)
 
         update_capture_interval();
         vTaskDelay(pdMS_TO_TICKS(dynamic_capture_interval_ms));
+        vTaskDelay(pdMS_TO_TICKS(10000)); // 10 seconds delay for testing
     }
 }
 
