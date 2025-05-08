@@ -1,13 +1,3 @@
----
-layout: default
-title: How to Add a Sensor
----
-
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true });
-</script>
-
 # How to Add a New Sensor
 
 This guide walks you through integrating a new sensor (e.g., DHT22 for temperature/humidity) into the system.  

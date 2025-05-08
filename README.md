@@ -2,7 +2,10 @@
 
 [🇨🇳 中文版本 README.zh-CN.md](README.zh-CN.md) | [🇺🇸 English Version README.md](README.md)
 
-A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The system integrates UART, Wi-Fi, HTTPS cloud communication, an ADC-based light sensor (you can easily add your own), and **BLE GATT-based communication**. Future support for MQTT is also planned.
+This repository a service‑oriented framework for embedded systems, built on ESP‑IDF 5.4 and tested on ESP32‑S3.
+Every function (light sensor, camera, UART, HTTP upload, BLE notify…) runs as an independent service module that auto‑registers through a service registry and communicates over a message bus.
+Adding a new sensor is one HAL + one service file; adding a new cloud sink is one subscriber.
+The same bus already fans‑out data to Wi‑Fi HTTP, BLE GATT and UART; hooks for MQTT, SD‑card, LoRa are ready.
 
 [How to Add a Sensor](docs/how_to_add_sensor.md)
 
@@ -14,7 +17,7 @@ A fully modular embedded system project built on ESP32-S3 using ESP-IDF 5.4. The
 | Version | Date       | Highlights                                                                                                                                                                                                                  |
 | ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs                                                                                                                                                                      |
-| v0.6    | 2025‑05‑07 | Introduced **`service_registry`**:<br>• All services now registered via `SERVICE_REGISTER()` macro<br>• `app_main()` is simplified to a single `service_registry_init()` call<br>• Modular sensor integration fully enabled |
+| v0.6    | 2025‑05‑07 | Introduced **`service_registry`**:<br>• All services now registered via `service_registry_register() and can be controled under group subscription |
 
 ---
 

@@ -54,6 +54,7 @@
 
 /**
  * @brief UART configuration
+ * Because I have change the board and the pin, this part will be used after test through
  */
 #define UART_PORT         UART_NUM_2
 #define UART_TX_PIN       GPIO_NUM_1

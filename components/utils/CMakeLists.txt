@@ -4,5 +4,4 @@ idf_component_register(
         src/ble_format_utils.c
         src/cache.c
     INCLUDE_DIRS "include"
-    REQUIRES monet_core monet_hal
 )

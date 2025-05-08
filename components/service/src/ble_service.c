@@ -766,7 +766,7 @@ static void ble_service_task(void *arg) {
 //             );
 //         }
 
-//         vTaskDelay(pdMS_TO_TICKS(3000));  // �?3 秒发送一�?
+//         vTaskDelay(pdMS_TO_TICKS(3000));  // 3 秒发送一
 //     }
 // }
 

@@ -14,7 +14,6 @@
 #include "utils/json_utils.h"
 #include "utils/log.h"
 #include "utils/config.h"
-#include "net/https_post.h"
 #include "service/light_sensor_service.h"
 #include "service/ble_service.h"
 #include "service/camera_service.h"
@@ -48,7 +47,7 @@ static void ota_test_task(void *param)
     }
 
     LOGI(TAG, "30s reached, starting OTA...");
-    ota_service_start();  // 调用你已有的 OTA 启动函数
+    ota_service_start();  // 调用已有的 OTA 启动函数
     vTaskDelete(NULL);
 }
 // ============================================================= //
@@ -77,8 +76,10 @@ void app_main(void)
 
      
     // ble_service_start();
-    //uart_service_start();
-    //data_reporter_start();
+
+    //service_registry_register(get_wifi_service);
+    //service_registry_register(get_light_uploader_service);
+    //service_registry_register(get_jpeg_uploader_service)
     //data_uploader_service_start();
 
     while (1) {

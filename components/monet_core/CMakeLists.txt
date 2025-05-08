@@ -3,7 +3,7 @@ idf_component_register(
         src/msg_bus.c
         src/service_registry.c
     INCLUDE_DIRS "include"
-    PRIV_REQUIRES
+    REQUIRES
         utils 
         monet_hal
 )

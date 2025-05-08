@@ -1,13 +1,3 @@
----
-layout: default
-title: Getting Started
----
-
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true });
-</script>
-
 # Getting Started
 
 This guide will help you build, configure, and run the ESP-MoNet project on your **ESP32-S3** board.

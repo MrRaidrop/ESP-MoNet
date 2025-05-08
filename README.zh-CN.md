@@ -82,7 +82,7 @@ project-root
 graph TD
     SENSOR[光照传感器（ADC）]
     DHT[DHT22 温湿度传感器]
-    CAMERA[摄像头camera_service.c（Zero-copy JPEG）]
+    CAMERA[摄像头camera_service.c]
     CAM_HAL[camera_hal.c]
     LIGHT[light_sensor_service.c]
     DHT_SERVICE[dht22_service.c]

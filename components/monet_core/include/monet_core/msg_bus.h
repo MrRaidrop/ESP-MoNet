@@ -34,8 +34,8 @@ typedef enum {
  * @brief Message structure used to exchange data across services.
  */
 typedef struct {
-    msg_topic_t topic;   ///< Logical topic category
-    uint32_t ts_ms;      ///< Timestamp in milliseconds (use esp_log_timestamp())
+    msg_topic_t topic;           ///< Logical topic category
+    uint32_t ts_ms;              ///< Timestamp in milliseconds (use esp_log_timestamp())
 
     union {
         int32_t value_int;       ///< Integer value (e.g. raw ADC)
@@ -99,7 +99,7 @@ bool msg_bus_subscribe(msg_topic_t topic, QueueHandle_t queue);
 bool msg_bus_subscribe_group(uint16_t group_id, QueueHandle_t queue);
 
 /**
- * @brief Legacy fallback: Subscribe to all topics regardless of group.
+ * @brief Legacy: Subscribe to all topics regardless of group.
  *
  * Should only be used for diagnostic/debugging purposes.
  *
