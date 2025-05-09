@@ -7,14 +7,14 @@
  */
 #ifndef __REG_REGS_H__
 #define __REG_REGS_H__
-#define GAIN                    0x00 /* AGC â€?Gain control gain setting  */
-#define BLUE                    0x01 /* AWB â€?Blue channel gain setting  */
-#define RED                     0x02 /* AWB â€?Red channel gain setting   */
-#define GREEN                   0x03 /* AWB â€?Green channel gain setting */
+#define GAIN                    0x00 /* AGC â€“ Gain control gain setting  */
+#define BLUE                    0x01 /* AWB â€“ Blue channel gain setting  */
+#define RED                     0x02 /* AWB â€“ Red channel gain setting   */
+#define GREEN                   0x03 /* AWB â€“ Green channel gain setting */
 #define BAVG                    0x05 /* U/B Average Level   */
 #define GAVG                    0x06 /* Y/Gb Average Level  */
 #define RAVG                    0x07 /* V/R Average Level   */
-#define AECH                    0x08 /* Exposure Value â€?AEC MSBs */
+#define AECH                    0x08 /* Exposure Value â€“ AEC MSBs */
 
 #define COM2                    0x09 /* Common Control 2 */
 #define COM2_SOFT_SLEEP         0x10 /* Soft sleep mode  */
@@ -129,8 +129,8 @@
 #define VSTART                  0x19 /* Vertical Frame (row) Start 8 MSBs (1 LSB is at HREF[6]) */
 #define VSIZE                   0x1A /* Vertical Sensor Size (1 LSB is at HREF[2]) */
 #define PSHFT                   0x1B /* Data Format - Pixel Delay Select */
-#define REG_MIDH                    0x1C /* Manufacturer ID Byte â€?High */
-#define REG_MIDL                    0x1D /* Manufacturer ID Byte â€?Low */
+#define REG_MIDH                    0x1C /* Manufacturer ID Byte â€“ High */
+#define REG_MIDL                    0x1D /* Manufacturer ID Byte â€“ Low */
 #define LAEC                    0x1F /* Fine AEC Value - defines exposure value less than one row period */
 
 #define COM11                   0x20 /* Common Control 11 */

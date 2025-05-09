@@ -27,8 +27,10 @@ bool http_post_send(const char* json_str)
     }
 
     esp_http_client_set_header(client, "Content-Type", "application/json");
+    
     esp_http_client_set_post_field(client, json_str, strlen(json_str));
-
+    esp_http_client_set_header(client, "Connection", "close");   
+    
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
         LOGI(TAG, "POST succeeded, status = %d", esp_http_client_get_status_code(client));

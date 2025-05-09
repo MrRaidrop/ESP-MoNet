@@ -1,60 +1,36 @@
+#ifndef DATA_UPLOADER_SERVICE_H_
+#define DATA_UPLOADER_SERVICE_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file data_uploader_service.h
- * @brief Services for uploading sensor data (JSON and JPEG) to cloud via HTTP/BLE.
+ * @brief Asynchronous uploader service for sensor data forwarding.
  *
- * This module defines two independent uploader services:
- * - **Light Uploader**: Converts `EVENT_SENSOR_LIGHT` to JSON and uploads via Wi-Fi or BLE.
- * - **JPEG Uploader**: Sends raw JPEG frames (`EVENT_SENSOR_JPEG`) over Wi-Fi.
+ * This service subscribes to the internal message bus to receive sensor messages,
+ * such as EVENT_SENSOR_LIGHT. It converts messages into JSON strings, and then
+ * sends them over available transport layers:
  *
- * Both services can be registered via `service_registry` or manually started using legacy entry.
+ * - If Wi-Fi is connected: sends via HTTP POST
+ * - Else if BLE is connected: sends via BLE notify
+ * - Else: logs offline warning and optionally caches the message for later retry
+ *
+ * Uploads are handled in a background FreeRTOS task.
  */
 
- #pragma once
+/**
+ * @brief Start the uploader service task.
+ *
+ * This function initializes a queue, subscribes to sensor events via msg_bus,
+ * and starts a FreeRTOS task to forward messages to the cloud or mobile clients.
+ * It should be called after Wi-Fi and BLE services are started.
+ */
+void data_uploader_service_start(void);
 
- #include "monet_core/service_registry.h"
- 
- #ifdef __cplusplus
- extern "C" {
- #endif
- 
- /**
-  * @brief Legacy: Start the data uploader services
-  * 
-  * This function manually starts light and/or JPEG upload tasks
-  * depending on the compile-time config macros:
-  * - `CONFIG_UPLOAD_LIGHT_ENABLED`
-  * - `CONFIG_UPLOAD_JPEG_ENABLED`
-  *
-  * @note In newer projects, prefer using `service_registry_register(get_..._uploader_service())`.
-  */
- void data_uploader_service_start(void);
- 
- /**
-  * @brief Get the service descriptor for the JPEG uploader.
-  *
-  * This service listens for `EVENT_SENSOR_JPEG` messages from the message bus,
-  * and uploads JPEG frames via HTTP POST. If the upload fails, the frame is cached
-  * for later retry, and the camera buffer is returned via `esp_camera_fb_return()`.
-  *
-  * @return Pointer to statically-defined JPEG service descriptor.
-  */
- const service_desc_t* get_jpeg_uploader_service(void);
- 
- /**
-  * @brief Get the service descriptor for the Light uploader.
-  *
-  * This service listens for `EVENT_SENSOR_LIGHT` messages,
-  * converts them to JSON format, and attempts to upload via:
-  * 1. HTTP POST (if Wi-Fi is available), or
-  * 2. BLE notify (if BLE is connected).
-  *
-  * On failure, messages are cached for retry.
-  *
-  * @return Pointer to statically-defined Light service descriptor.
-  */
- const service_desc_t* get_light_uploader_service(void);
- 
- #ifdef __cplusplus
- }
- #endif
- 
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // DATA_UPLOADER_SERVICE_H_

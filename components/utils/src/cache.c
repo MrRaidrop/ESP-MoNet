@@ -23,11 +23,6 @@ static int count = 0;
 static bool is_full(void)  { return count == MAX_CACHE_ITEMS; }
 static bool is_empty(void) { return count == 0; }
 
-/**
- * @brief Push a JSON string into the cache.
- *
- * Used for sensor JSON payloads. Data is copied into ring buffer with length recorded.
- */
 bool cache_push(const char *json_str)
 {
     if (is_full()) {
@@ -47,9 +42,7 @@ bool cache_push(const char *json_str)
     return true;
 }
 
-/**
- * @brief Flush one cached JSON entry via string-based sender callback.
- */
+
 bool cache_flush_once_with_sender(bool (*send_fn)(const char *json))
 {
     if (is_empty()) return false;
@@ -68,9 +61,7 @@ bool cache_flush_once_with_sender(bool (*send_fn)(const char *json))
     return success;
 }
 
-/**
- * @brief Flush one cached binary blob via binary sender callback.
- */
+
 bool cache_flush_once_with_sender_ex(bool (*send_fn)(const uint8_t *data, size_t len))
 {
     if (is_empty()) return false;
@@ -115,25 +106,17 @@ bool cache_push_blob(const void *buf, size_t len)
     return true;
 }
 
-/**
- * @brief Print current cache statistics to log.
- */
 void cache_log_stats(void)
 {
     LOGI(TAG, "[Cache] Entries: %d/%d | Head=%d | Tail=%d", count, MAX_CACHE_ITEMS, head, tail);
 }
 
-/**
- * @brief Return current number of items in cache.
- */
 int cache_get_count(void)
 {
     return count;
 }
 
-/**
- * @brief Deprecated auto-flush task (manually call flush instead).
- */
+
 void cache_flush_task_start(void)
 {
     LOGW(TAG, "Deprecated: auto flush loop removed. Use cache_flush_once_with_sender[_ex]() manually.");

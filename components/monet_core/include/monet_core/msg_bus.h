@@ -1,5 +1,5 @@
-#ifndef MSG_BUS_H_
-#define MSG_BUS_H_
+#ifndef MONET_CORE_MSG_BUS_H
+#define MONET_CORE_MSG_BUS_H
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -112,4 +112,4 @@ bool msg_bus_subscribe_any(QueueHandle_t q);
 }
 #endif
 
-#endif // MSG_BUS_H_
+#endif // MONET_CORE_MSG_BUS_H

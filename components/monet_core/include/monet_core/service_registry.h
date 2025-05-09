@@ -1,19 +1,5 @@
-/**
- * @file service_registry.h
- * @brief Centralized service registry for managing the lifecycle of system services in FreeRTOS.
- *
- * This module allows services (tasks) to be registered and managed in a unified way.
- * Instead of creating tasks directly in the main application, services register themselves
- * via `service_registry_register()`, and can then be started/stopped by name or as a group.
- *
- * Usage Example:
- *  - Each service implements a getter like `get_light_sensor_service()`
- *    which returns a pointer to a statically defined `service_desc_t`.
- *  - In `main.c`, the application registers all services using `service_registry_register()`.
- *  - At boot, the application calls `service_registry_start_all()` to launch them.
- */
-
- #pragma once
+ #ifndef MONET_CORE_SERVICE_REGISTRY_H
+ #define MONET_CORE_SERVICE_REGISTRY_H
 
  #include <stdbool.h>
  #include <stdint.h>
@@ -132,4 +118,6 @@
  #ifdef __cplusplus
  }
  #endif
+
+ #endif // MONET_CORE_SERVICE_REGISTRY_H
  

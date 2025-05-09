@@ -9,6 +9,7 @@
 #include <openssl/sha.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <cjson/cJSON.h> 
 
 #define PORT 8443
 #define MAX_CONN 10
@@ -139,11 +140,26 @@ void handle_request(SSL *ssl) {
     } else if (strcmp(method, "POST") == 0 && strncmp(path, "/data", 5) == 0) {
         char *payload = strstr(buf, "\r\n\r\n");
         if (payload) {
-            printf("Received POST Payload:\n%s\n", payload + 4);
+            const char *json = payload + 4;
+            printf("Received POST Payload:\n%s\n", json);
+    
+            cJSON *root = cJSON_Parse(json);
+            if (root) {
+                const cJSON *type = cJSON_GetObjectItem(root, "type");
+                if (type && strcmp(type->valuestring, "light") == 0) {
+                    const cJSON *value = cJSON_GetObjectItem(root, "value");
+                    const cJSON *ts = cJSON_GetObjectItem(root, "ts");
+                    if (cJSON_IsNumber(value) && cJSON_IsNumber(ts)) {
+                        printf("Light = %d  (ts=%u)\n", value->valueint, ts->valueint);
+                    }
+                }
+                cJSON_Delete(root);
+            } else {
+                printf("Failed to parse JSON\n");
+            }
         }
         snprintf(body, sizeof(body), "{\"result\": \"ok\"}");
-
-    } else if (strcmp(method, "GET") == 0 && strncmp(path, "/firmware.sha256", 16) == 0) {
+    }else if (strcmp(method, "GET") == 0 && strncmp(path, "/firmware.sha256", 16) == 0) {
         FILE *fp = fopen("firmware.bin", "rb");
         if (!fp) {
             perror("Failed to open firmware.bin");
@@ -151,26 +167,38 @@ void handle_request(SSL *ssl) {
         } else {
             printf("Calculating SHA256 for firmware.bin...\n");
             SHA256_CTX sha;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-            SHA256_Init(&sha);
-#pragma GCC diagnostic pop
-            unsigned char tmp[1024];
-            size_t n;
-            while ((n = fread(tmp, 1, sizeof(tmp), fp)) > 0)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-                SHA256_Update(&sha, tmp, n);
-#pragma GCC diagnostic pop
-            fclose(fp);
+        // Calculates SHA256 hash of "firmware.bin" and returns it as hex string
+        // The hash is returned in the HTTP response body as a lowercase hex string (64 chars)
 
-            unsigned char hash[32];
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-            SHA256_Final(hash, &sha);
-#pragma GCC diagnostic pop
-            for (int i = 0; i < 32; ++i)
-                sprintf(&body[i * 2], "%02x", hash[i]);
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+            SHA256_Init(&sha);  // Initialize SHA256 context (deprecated but used for compatibility)
+        #pragma GCC diagnostic pop
+
+        unsigned char tmp[1024]; // Temporary buffer to read file chunks
+        size_t n;
+
+        // Read the firmware file in chunks and update the SHA256 hash
+        while ((n = fread(tmp, 1, sizeof(tmp), fp)) > 0) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+            SHA256_Update(&sha, tmp, n);  // Feed each chunk to the SHA256 algorithm
+        #pragma GCC diagnostic pop
+        }
+
+        fclose(fp); // Close firmware file
+
+        unsigned char hash[32]; // SHA256 produces a 256-bit hash = 32 bytes
+
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+            SHA256_Final(hash, &sha);  // Finalize the SHA256 hash computation
+        #pragma GCC diagnostic pop
+
+        // Convert the binary hash to hex string format
+        for (int i = 0; i < 32; ++i)
+            sprintf(&body[i * 2], "%02x", hash[i]);  // Write two hex digits for each byte
+
         }
 
     } else if (strcmp(method, "GET") == 0 && strncmp(path, "/firmware.bin", 13) == 0) {

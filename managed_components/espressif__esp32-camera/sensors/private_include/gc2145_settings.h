@@ -51,7 +51,8 @@ static const uint16_t gc2145_default_init_regs[][2] = {
     {0x1e, 0x88}, //90//98 //fix  竖线//Analog Mode1,TX high,Coln_r
     {0x1f, 0x78}, //78 //38 //18 //Analog Mode2,txlow
     {0x20, 0x03}, //07 //Analog Mode3,comv,ad_clk mode
-    {0x21, 0x40}, //10//20//40 //fix 灯管横条�?    {0x22, 0xa0}, //d0//f0 //a2 //Vref vpix  FPN严重
+    {0x21, 0x40}, //10//20//40 //fix 灯管横条纹
+    {0x22, 0xa0}, //d0//f0 //a2 //Vref vpix  FPN严重
     {0x24, 0x1e},
     {0x25, 0x01}, //col sel
     {0x26, 0x10}, //Analog PGA gain1
@@ -219,7 +220,7 @@ static const uint16_t gc2145_default_init_regs[][2] = {
 ///////////// ASDE ////////////////////////
 /////////////////////////////////////////////////
     {0xfe, 0x01}, //page 1
-    {0x21, 0x14}, //luma_value_div_sel(分频，与0xef�?倍关系，增大1�?xef的值减�?�?
+    {0x21, 0x14}, //luma_value_div_sel(分频，与0xef呈2倍关系，增大1，0xef的值减小1倍)
 //ff  ef  luma_value read_only
 
     {0xfe, 0x02}, //page2

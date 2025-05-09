@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 
 # 配置参数
-PORT = "/dev/ttyUSB0"        # 串口名
+PORT = "COM8"                # 串口名
 BAUD = 921600                # 波特率
 MAGIC = b'\xA5\xA5\xA5\xA5'  # 帧起始标记
 HEADER_SIZE = 16             # 帧头长度

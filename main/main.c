@@ -61,12 +61,11 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    //service_registry_register(get_light_sensor_service());
+    service_registry_register(get_light_sensor_service());
 
-    service_registry_register(get_camera_service());
-    service_registry_register(get_uart_service());
+    //service_registry_register(get_camera_service());
+    //service_registry_register(get_uart_service());
 
-    service_registry_start_all();
     
 
     // if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
@@ -74,13 +73,13 @@ void app_main(void)
     //     return;
     // }
 
-     
+    service_registry_register(get_wifi_service());
     // ble_service_start();
-
-    //service_registry_register(get_wifi_service);
-    //service_registry_register(get_light_uploader_service);
-    //service_registry_register(get_jpeg_uploader_service)
+    //uart_service_start();
+    //data_reporter_start();
     //data_uploader_service_start();
+    service_registry_register(get_light_uploader_service());
+    service_registry_start_all();
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
