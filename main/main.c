@@ -21,6 +21,7 @@
 #include "service/uart_service.h"
 #include "OTA/https_ota_service.h" 
 #include "service/data_uploader_service.h"
+#include "service/http_uploader_service.h"
 #include "monet_core/service_registry.h"
 
 #define TAG "MAIN"
@@ -74,11 +75,9 @@ void app_main(void)
     // }
 
     service_registry_register(get_wifi_service());
-    // ble_service_start();
-    //uart_service_start();
-    //data_reporter_start();
-    //data_uploader_service_start();
-    service_registry_register(get_light_uploader_service());
+    //service_registry_register(get_light_uploader_service());
+    service_registry_register(get_http_uploader_service());
+
     service_registry_start_all();
 
     while (1) {

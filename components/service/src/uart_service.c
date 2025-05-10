@@ -1,135 +1,134 @@
-#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <string.h>
 
-#include "service/uart_service.h"
-#include "monet_hal/uart_hal.h"
-#include "monet_hal/camera_hal.h"
+#include "esp_crc.h" // For CRC32 calculation
 #include "monet_core/msg_bus.h"
 #include "monet_core/service_registry.h"
+#include "monet_hal/camera_hal.h"
+#include "monet_hal/uart_hal.h"
+#include "service/uart_service.h"
 #include "utils/log.h"
-#include "esp_crc.h"  // For CRC32 calculation
 
 #define TAG "UART_SERVICE"
 
+
+// now the sink handler logic is here
+static bool uart_sink_handler(const msg_t *m) {
+  switch (m->topic) {
+
+  case EVENT_SENSOR_JPEG: {
+    const camera_fb_t *fb = m->data.jpeg.fb;
+    uint32_t crc = esp_crc32_le(0, fb->buf, fb->len);
+    struct __attribute__((packed)) {
+      uint32_t magic;
+      uint16_t w, h;
+      uint32_t len, crc32;
+    } hdr = {0xA5A5A5A5, fb->width, fb->height, fb->len, crc};
+
+    monet_uart_hal_write_bytes((uint8_t *)&hdr, sizeof(hdr));
+    monet_uart_hal_write_bytes(fb->buf, fb->len);
+    return true;
+  }
+
+/** This is the entry of user want to add his own output logic */
+/** -------------------------------------------------------------------------- */
+
+  default: {
+    const char *json = m->data.json_str.json;
+
+    // if user don't provide a json output then fallback to normal output
+    if (json[0] != '\0') {
+      monet_uart_hal_write_string(json);
+    } else {
+      char buf[128];
+      switch (m->topic) {
+      case EVENT_SENSOR_LIGHT:
+        snprintf(buf, sizeof(buf), "[LIGHT] ADC: %" PRId32, m->data.value_int);
+        break;
+      case EVENT_SENSOR_TEMP:
+        snprintf(buf, sizeof(buf), "[TEMP] %.2f°C, %.2f%%",
+                 m->data.temp_hum.temperature, m->data.temp_hum.humidity);
+        break;
+      case EVENT_SENSOR_UART:
+        snprintf(buf, sizeof(buf), "[UART] %s", m->data.uart_text.str);
+        break;
+      default:
+        snprintf(buf, sizeof(buf), "[UNKNOWN] topic=%d", m->topic);
+        break;
+      }
+      monet_uart_hal_write_string(buf);
+    }
+
+    monet_uart_hal_write_string("\r\n");
+    return true;
+  }
+  }
+}
+
 /// Service descriptor for automatic registration
 static const service_desc_t uart_service_desc = {
-    .name       = "uart_service",
-    .task_fn    = uart_service_task,
-    .task_name  = "uart_tx_task",
+    .name = "uart_service",
+    .task_fn = uart_service_task,
+    .task_name = "uart_tx_task",
     .stack_size = 4096,
     //.priority   = 5,
-    .priority   = 6,  // Higher priority for test purposes, can be adjusted to 5
-    .role       = SERVICE_ROLE_SUBSCRIBER,
-    .topics     = (const msg_topic_t[]){ EVENT_GROUP_SENSOR, MSG_TOPIC_END }
-};
-
-const service_desc_t* get_uart_service(void)
-{
-    return &uart_service_desc;
-}
+    .priority = 6, // Higher priority for test purposes, can be adjusted to 5
+    .role = SERVICE_ROLE_SUBSCRIBER,
+    .topics = (const msg_topic_t[]){EVENT_GROUP_SENSOR, MSG_TOPIC_END},
+    .sink_cb = uart_sink_handler};
 
 /**
  * @brief Task to forward sensor messages to UART.
  *
- * This task receives messages like ADC, Temp, JPEG etc. and prints them over UART.
- * If the message is a JPEG frame, it sends a binary header with metadata and CRC.
+ * This task receives messages like ADC, Temp, JPEG etc. and prints them over
+ * UART. All formatting logic is now handled by `uart_sink_handler()`.
+ * If the message is a JPEG frame, it sends a binary header with metadata
+ * and CRC.
  */
-void uart_service_task(void *arg)
-{
-    QueueHandle_t q = (QueueHandle_t)arg;
-    if (q == NULL) {
-        LOGE(TAG, "No subscription queue passed to UART task");
-        vTaskDelete(NULL);
-        return;
+void uart_service_task(void *arg) {
+  QueueHandle_t q = (QueueHandle_t)arg;
+  if (q == NULL) {
+    LOGE(TAG, "No subscription queue passed to UART task");
+    vTaskDelete(NULL);
+    return;
+  }
+
+  monet_uart_hal_init();
+
+  msg_t msg;
+  while (xQueueReceive(q, &msg, portMAX_DELAY)) {
+    if (uart_sink_handler(&msg)) {
+      if (msg.release)
+        msg.release(&msg);
     }
-
-    monet_uart_hal_init();
-
-    msg_t msg;
-    while (1) {
-        if (xQueueReceive(q, &msg, portMAX_DELAY)) {
-            char buf[64];
-            switch (msg.topic) {
-                case EVENT_SENSOR_LIGHT:
-                    snprintf(buf, sizeof(buf), "Light ADC: %" PRId32 "\r\n", msg.data.value_int);
-                    monet_uart_hal_write_string(buf);
-                    break;
-                case EVENT_SENSOR_TEMP:
-                // You can implement yourself here, or your own sensor
-                    snprintf(buf, sizeof(buf), "Temp: %.2f C, Hum: %.2f%%\r\n",
-                             msg.data.temp_hum.temperature,
-                             msg.data.temp_hum.humidity);
-                    monet_uart_hal_write_string(buf);
-                    break;
-                case EVENT_SENSOR_JPEG: {
-                    const camera_fb_t *fb = msg.data.jpeg.fb;
-
-                    // Compute CRC32 over the image data
-                    uint32_t crc = esp_crc32_le(0, fb->buf, fb->len);
-
-                    // Define packed JPEG frame header for transmission
-                    struct __attribute__((packed)) FrameHeader {
-                        uint32_t magic;     // 0xA5A5A5A5 = magic start
-                        uint16_t width;     // Image width (if available)
-                        uint16_t height;    // Image height (if available)
-                        uint32_t length;    // JPEG byte size
-                        uint32_t crc32;     // CRC32 of payload
-                    };
-
-                    struct FrameHeader header = {
-                        .magic  = 0xA5A5A5A5,
-                        .width  = fb->width,
-                        .height = fb->height,
-                        .length = fb->len,
-                        .crc32  = crc
-                    };
-
-                    // Send the header first
-                    monet_uart_hal_write_bytes((uint8_t*)&header, sizeof(header));
-
-                    // Then send the actual JPEG data
-                    monet_uart_hal_write_bytes(fb->buf, fb->len);
-
-                    LOGI(TAG, "JPEG frame sent: %d bytes, CRC=0x%08X", fb->len, (unsigned int)crc);
-                    break;
-                }
-                default:
-                    snprintf(buf, sizeof(buf), "[UART] Unknown topic: %d\r\n", msg.topic);
-                    monet_uart_hal_write_string(buf);
-                    break;
-            }
-        }
-    }
+  }
 }
 
 /**
  * @brief Task to receive UART input and publish to msg_bus.
  */
-static void uart_receive_task(void *arg)
-{
-    QueueHandle_t rx = monet_uart_hal_get_rx_queue();
-    char *line;
-    while (1) {
-        if (xQueueReceive(rx, &line, portMAX_DELAY) == pdTRUE) {
-            msg_t msg = {
-                .topic = EVENT_SENSOR_UART,
-                .ts_ms = esp_log_timestamp()
-            };
-            strncpy(msg.data.uart_text.str, line, sizeof(msg.data.uart_text.str) - 1);
-            msg.data.uart_text.str[sizeof(msg.data.uart_text.str) - 1] = '\0';
+static void uart_receive_task(void *arg) {
+  QueueHandle_t rx = monet_uart_hal_get_rx_queue();
+  char *line;
+  while (1) {
+    if (xQueueReceive(rx, &line, portMAX_DELAY) == pdTRUE) {
+      msg_t msg = {.topic = EVENT_SENSOR_UART, .ts_ms = esp_log_timestamp()};
+      strncpy(msg.data.uart_text.str, line, sizeof(msg.data.uart_text.str) - 1);
+      msg.data.uart_text.str[sizeof(msg.data.uart_text.str) - 1] = '\0';
 
-            msg_bus_publish(&msg);
-            LOGI(TAG, "[RX] %s published", line);
-            free(line);
-        }
+      msg_bus_publish(&msg);
+      LOGI(TAG, "[RX] %s published", line);
+      free(line);
     }
+  }
 }
 
 // Internal uses only now
-void uart_service_start(void)
-{
-    monet_uart_hal_init();
-    xTaskCreate(uart_receive_task, "uart_receive_task", 2048, NULL, 5, NULL);
-    LOGI(TAG, "UART receive-side task started");
+void uart_service_start(void) {
+  monet_uart_hal_init();
+  xTaskCreate(uart_receive_task, "uart_receive_task", 2048, NULL, 5, NULL);
+  LOGI(TAG, "UART receive-side task started");
 }
+
+const service_desc_t *get_uart_service(void) { return &uart_service_desc; }

@@ -33,7 +33,9 @@ typedef enum {
 /**
  * @brief Message structure used to exchange data across services.
  */
-typedef struct {
+typedef struct msg msg_t;
+
+struct msg {
     msg_topic_t topic;           ///< Logical topic category
     uint32_t ts_ms;              ///< Timestamp in milliseconds (use esp_log_timestamp())
 
@@ -55,16 +57,22 @@ typedef struct {
         } raw;
 
         struct {
-            float accel[3];     ///< Accelerometer and gyroscope data, I have one in my stock
+            float accel[3];      ///< Accelerometer and gyroscope data
             float gyro[3];
-        } imu;                   
+        } imu;
 
         struct {
             camera_fb_t *fb;     ///< Frame buffer pointer for camera images
         } jpeg;
+
+        /** NEW: sensor can just upload the JSON string itself */
+        struct {
+            char json[128];
+        } json_str;
     } data;
 
-} msg_t;
+    void (*release)(msg_t *);     ///< NEW: Optional cleanup hook for dynamic resources
+};
 
 /**
  * @brief Publish a message to the corresponding topic's subscribers.

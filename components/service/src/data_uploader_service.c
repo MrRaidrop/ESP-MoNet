@@ -21,6 +21,8 @@
 #define TASK_PRIORITY 5
 #define QUEUE_LENGTH 4
 
+
+
 static void light_uploader_task(void* pv)
 {
     QueueHandle_t queue = xQueueCreate(QUEUE_LENGTH, sizeof(msg_t));
@@ -90,12 +92,13 @@ static void jpeg_uploader_task(void* pv)
             camera_fb_t *fb = msg.data.jpeg.fb;
             if (!fb || !fb->buf || fb->len == 0) {
                 LOGW(TAG, "Invalid JPEG frame received");
+                if (msg.release) msg.release(&msg);  // release fb
                 continue;
             }
 
             bool success = false;
 
-            // Try sending JPEG via Wi-Fi only (BLE usually doesn't support large binary payloads)
+            // Try sending JPEG via Wi-Fi only
             if (wifi_service_is_connected()) {
                 success = http_post_image(fb->buf, fb->len);
                 if (success) {
@@ -103,22 +106,20 @@ static void jpeg_uploader_task(void* pv)
                 }
             }
 
-            // Skipping JPEG caching for now (to be implemented in later step)
             if (!success) {
                 LOGW(TAG, "[CACHE] JPEG upload failed, saving to cache");
                 cache_push_blob(fb->buf, fb->len);
             }
 
-            // Retry cached binary (JPEG) uploads
             if (wifi_service_is_connected()) {
                 cache_flush_once_with_sender_ex(http_post_image);
             }
 
-            // Zero-copy: must manually return the frame buffer to camera driver
-            esp_camera_fb_return(fb);
+            if (msg.release) msg.release(&msg);
         }
     }
 }
+
 
 /**
  * @brief Legacy entry point for uploader tasks, for testing purposes.
@@ -183,3 +184,5 @@ const service_desc_t* get_light_uploader_service(void)
 {
     return &data_uploader_light_desc;
 }
+//should not be like that, if a sensor node is added, then user need to 
+//add a uploader task, that's not clean at all.

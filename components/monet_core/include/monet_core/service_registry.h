@@ -18,21 +18,32 @@
   * @brief Enumeration for the runtime state of a service.
   */
  typedef enum {
-     SERVICE_STATE_DISABLED = 0, /**< Service is not running */
-     SERVICE_STATE_RUNNING       /**< Service is actively running */
+     SERVICE_STATE_DISABLED = 0,     /**< Service is not running */
+     SERVICE_STATE_RUNNING           /**< Service is actively running */
  } service_state_t;
- 
-
 
  /**
   * @brief Enumeration for the characteristics of a service.
   * e.g : light sensor/temp_hum sensor is publisher, ble/http is subscriber
   */
  typedef enum {
-    SERVICE_ROLE_NONE = 0,   /**< Not pub not sub, e.g. wifi_service */
-    SERVICE_ROLE_PUBLISHER,  /**< Sensors or data sources (e.g., light, camera) that publish messages */
-    SERVICE_ROLE_SUBSCRIBER  /**< Services (e.g., UART, BLE, HTTP) that consume messages via msg_bus */
+    SERVICE_ROLE_NONE = 0,           /**< Not pub not sub, e.g. wifi_service */
+    SERVICE_ROLE_PUBLISHER,          /**< Sensors or data sources (e.g., light, camera) that publish messages */
+    SERVICE_ROLE_SUBSCRIBER          /**< Services (e.g., UART, BLE, HTTP) that consume messages via msg_bus */
 } service_role_t;
+
+/**
+ * @brief Callback function for subscriber services to handle incoming messages.
+ *
+ * This function is called by the internal dispatch task of `service_registry` 
+ * whenever a subscribed message is received. If provided, this callback replaces 
+ * the need to define a dedicated FreeRTOS task.
+ *
+ * @param m Pointer to the incoming message (`msg_t`)
+ * @return true if message handled successfully, false otherwise
+ */
+typedef bool (*sink_cb_t)(const msg_t *m);
+
 
  /**
   * @brief Structure that describes a service to be managed by the registry.
@@ -41,15 +52,17 @@
   * including its function pointer, stack size, and priority.
   */
  typedef struct {
-     const char *name;                /**< Unique identifier of the service */
+     const char *name;               /**< Unique identifier of the service */
      TaskFunction_t task_fn;         /**< Task entry function */
      const char *task_name;          /**< Name used for the FreeRTOS task */
      uint32_t stack_size;            /**< Stack size in bytes */
      UBaseType_t priority;           /**< Task execution priority */
      /* NEW ↓↓↓ */
-     service_role_t    role;              ///< publisher or subscriber or none
+     service_role_t    role;         /**< publisher or subscriber or none */
      const msg_topic_t *topics;           
       /**< NULL-terminated list of topics to subscribe to, used only if role is SUBSCRIBER */
+      bool (*sink_cb)(const msg_t *);
+      /**< Optional callback to handle incoming messages */
  } service_desc_t;
  
  /**

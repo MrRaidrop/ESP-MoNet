@@ -27,6 +27,13 @@ static void update_capture_interval(void)
     LOGI(TAG, "RSSI = %d, interval = %" PRIu32 " ms", rssi, dynamic_capture_interval_ms);
 }
 
+static void release_camera_frame(msg_t *msg) {
+    if (msg && msg->topic == EVENT_SENSOR_JPEG && msg->data.jpeg.fb) {
+        esp_camera_fb_return(msg->data.jpeg.fb);
+        msg->data.jpeg.fb = NULL;
+    }
+}
+
 
 // Camera service task function
 static void camera_service_task(void *param)
@@ -48,11 +55,12 @@ static void camera_service_task(void *param)
         msg_t msg = {
             .topic = EVENT_SENSOR_JPEG,
             .ts_ms = esp_log_timestamp(),
+            // zero copy here, so the subscriber who get the fb need to release
+            .data.jpeg.fb = fb,
+            .release =release_camera_frame
         };
 
-        // Zero copy
-        msg.data.jpeg.fb = fb;
-
+ 
         msg_bus_publish(&msg);
 
         update_capture_interval();
@@ -60,6 +68,7 @@ static void camera_service_task(void *param)
         vTaskDelay(pdMS_TO_TICKS(10000)); // 10 seconds delay for testing
     }
 }
+
 
 static const service_desc_t camera_service_desc = {
     .name = "camera_service",

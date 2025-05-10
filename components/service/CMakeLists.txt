@@ -7,6 +7,7 @@ idf_component_register(
         src/data_uploader_service.c
         src/camera_service.c
         src/dht22_service.c
+        src/http_uploader_service.c
     INCLUDE_DIRS "include"
     PRIV_REQUIRES 
         bt 

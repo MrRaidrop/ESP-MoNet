@@ -1,5 +1,7 @@
 # How to Add a New Sensor
 
+**v0.7 have change something related to this document, wait to be constructed**
+
 This guide walks you through integrating a new sensor (e.g., DHT22 for temperature/humidity) into the system.  
 Because this is a modular architecture, you can do this in **3 simple steps** — without modifying any other services (UART, BLE, HTTP, etc.).
 
