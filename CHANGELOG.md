@@ -1,3 +1,26 @@
+## [0.8.0 PREV] – 2025‑05‑12
+**TL;DR** — TODO LIST for 0.8
+
+• server code update: 
+    jpeg frame handle
+    more clean structure
+    throughout test
+    README_SERVER update
+
+• KCONFIG:
+    config.h -> menuconfig
+    all configuration adjustable by UI
+    publisher - subscriber relationship configurable through router table
+    sdkconfig.default 
+
+• How to add sensor document modification due to the change of msg_bus
+
+• WIFI start sequence modify, currently all publisher need to wait wifi   
+  connection to start, not the best practice
+
+
+
+
 ## [0.7.0] – 2025‑05‑10
 **TL;DR** — What You Get After v0.7
 Memory‑safe zero‑copy camera pipeline (publisher‑side release hook).
