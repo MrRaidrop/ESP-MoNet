@@ -69,16 +69,21 @@ void app_main(void)
 
     
 
-    // if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
-    //     LOGE(TAG, "Wi-Fi failed");
-    //     return;
-    // }
+    if (!wifi_service_start_and_wait(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD, 10000)) {
+        LOGE(TAG, "Wi-Fi failed");
+        return;
+    }
 
-    service_registry_register(get_wifi_service());
+    //service_registry_register(get_wifi_service());
     //service_registry_register(get_light_uploader_service());
     service_registry_register(get_http_uploader_service());
+    /** This is not good, http uploader have to want wifi connected to register itself
+     *  So I have to modify the service_registry, let waiting wifi logic happen
+     */
 
+    LOGI(TAG, "== STARTING ALL SERVICES ==");
     service_registry_start_all();
+    LOGI(TAG, "== ALL SERVICES STARTED ==");
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));

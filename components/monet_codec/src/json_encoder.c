@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include "monet_codec/json_encoder.h"
 #include "monet_core/msg_bus.h"
+#include "utils/log.h"
 
 bool json_encode_msg(const msg_t *msg, char *out_buf, size_t buf_size)
 {
@@ -17,6 +18,7 @@ bool json_encode_msg(const msg_t *msg, char *out_buf, size_t buf_size)
         snprintf(out_buf, buf_size,
                  "{ \"type\": \"light\", \"value\": %ld, \"ts\": %" PRIu32 " }",
                  msg->data.value_int, msg->ts_ms);
+        LOGI("JSON_ENCODER", "Encoded JSON: %s", out_buf);
         return true;
 
     case EVENT_SENSOR_TEMP:

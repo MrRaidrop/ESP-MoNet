@@ -14,12 +14,12 @@ The same bus already fans‑out data to Wi‑Fi HTTP, BLE GATT and UART; hoo
 ---
 
 ## Releases
-| Version | Date       | Highlights                                                                                                                                                                                                                  |
-| ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs                                                                                                                                                                      |
-| v0.6    | 2025‑05‑07 | Introduced **`service_registry`**:<br>• All services now registered via `service_registry_register() and can be controled under group subscription |
+| Version | Date       | Highlights |
+|---------|------------|------------|
+| v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs |
+| v0.6    | 2025‑05‑07 | Introduced `service_registry`:<br>• All services now registered via `service_registry_register()`<br>• Can be controlled under group subscription |
+| v0.7 — Sink / Uploader Refactor | 2025‑05‑10 | • Added sink-callback architecture in `service_registry`<br>• Replaced monolithic `data_uploader_service` with `http_uploader_service`<br>• `msg_t` gains `.release()` hook – JPEG owner returns `camera_fb_t` safely<br>• UART & HTTP now consume JSON-first<br>• Only JPEG needs custom code (you can always add your own)<br>• Will write a document showing how to do it |
 
-| v0.7 — Sink / Uploader Refactor | 2025‑05‑10 | • Added sink‑callback architecture in service_registry<br>• Replaced monolithic data_uploader_service with http_uploader_service <br>• msg_t gains .release() hook – JPEG owner returns camera_fb_t safely<br>• UART & HTTP now consume JSON‑first, only JPEG needs custom code (of cause you can always add your own, I will write a document showing how to do it) |
 
 ---
 
@@ -27,7 +27,6 @@ The same bus already fans‑out data to Wi‑Fi HTTP, BLE GATT and UART; hoo
 
 | Version                           | ETA     | Key Changes                                                                                                                                                                                                                                        | Delivery Criteria                                                                                                |
 | --------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-
 | **v0.8 — Kconfig Migration**      | 2025‑05 | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config                                      | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h` • Use Router table to control sub-pub logic, implement K-config for this  • use sdkconfig.default to replace current sdkconfig structure                |
 | **v0.9 — BLE Service & OTA Refinement** | 2025‑05 | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc                                    | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible \* OTA rollback<br>                    |
 | **v1.0 — Quality Release**        | 2025‑06 | • **≥ 80 % unit test coverage** (cache, encoder, msg\_bus, registry, BLE API)<br>• GitHub Actions: build + `ctest` + `clang-format` all pass<br>• Public firmware binary + 2‑min demo video<br>• Complete bilingual docs and architecture diagrams | \* CI passes all checks<br>\* CHANGELOG & release notes finalized<br>\* README features embedded demo video link |
@@ -287,7 +286,7 @@ The upload system requires no other changes — just define the message and form
 | Config System  | Configs hardcoded in `.c` files                    | Use `Kconfig` + NVS runtime override                 | 🔜 Planned     |
 | Logging        | LOGI/W macros used, but no module-level control    | Introduce `LOG_MODULE_REGISTER` + per-module level   | ✅ Done     |
 | Unit Testing   | Only BLE utils tested in CI                        | Add test cases for `json_utils`, cache, uploader     | ⏳ In Progress |
-| HTTPS Security | TLS certs not validated                           | Add CA config toggle + cert verification             | 🔜 Planned     |
+| HTTPS Security | TLS certs not validated                           | Add CA config toggle + cert verification             | NOT Planned     |
 | OTA Mechanism  | No image validation or rollback                    | Add SHA256 + dual partition fallback                 | 🔜 Planned     |
 | BLE Extension  | Only 1 notify char, no write command support       | Extend GATT profile to support control commands      | ⏳ In Progress |
 

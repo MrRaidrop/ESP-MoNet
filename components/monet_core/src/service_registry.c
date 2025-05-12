@@ -44,7 +44,8 @@
  
  void service_registry_register(const service_desc_t *desc)
  {
-     if (!desc || !desc->name || !desc->task_fn) return;
+    if (!desc || !desc->name || (!desc->task_fn && !desc->sink_cb))
+        return;
      if (s_registry_count >= MAX_SERVICES) {
          LOGW(TAG, "Registry full, cannot register %s", desc->name);
          return;
@@ -107,8 +108,20 @@
                  ctx->sink_cb = desc->sink_cb;
  
                  for (const msg_topic_t *t = desc->topics; *t != MSG_TOPIC_END; ++t) {
-                     msg_bus_subscribe(*t, ctx->queue);
-                 }
+
+                    bool ok;
+                    if (*t >= EVENT_SENSOR_MAX) {            // 组订阅（如 0x1000）
+                        ok = msg_bus_subscribe_group(*t, ctx->queue);
+                    } else {                                 // 单 topic 订阅
+                        ok = msg_bus_subscribe(*t, ctx->queue);
+                    }
+                
+                    if (!ok) {
+                        LOGW(TAG, "Cannot subscribe %s to topic %d",
+                             desc->name, *t);
+                    }
+                }
+                
  
                  BaseType_t res = xTaskCreate(
                      subscriber_dispatch_task,       // unified dispatcher
