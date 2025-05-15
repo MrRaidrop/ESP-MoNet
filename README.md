@@ -168,7 +168,7 @@ idf.py build flash monitor
 | Logging        | Info level, tag filtering enabled           |
 | Services       | All core modules enabled (msg_bus, cache)   |
 
-// Cameara module can be removed if you don't want to use it
+**Cameara module can be removed if you don't want to use it**
 ---
 
 Ready to go? Plug in your board, flash it, and watch the data flow.

@@ -13,7 +13,6 @@
  
  #define MSG_TOPIC_END EVENT_SENSOR_MAX
 
-
  /**
   * @brief Enumeration for the runtime state of a service.
   */

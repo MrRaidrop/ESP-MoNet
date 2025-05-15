@@ -1,22 +1,21 @@
 ## [0.8.0 PREV] – 2025‑05‑12
 **TL;DR** — TODO LIST for 0.8
 
-• server code update: 
-    jpeg frame handle
-    more clean structure
-    throughout test
-    README_SERVER update
+server code update: 
+    • jpeg frame handle
+    • more clean structure
+    • throughout test
+    • README_SERVER update
 
-• KCONFIG:
-    config.h -> menuconfig
-    all configuration adjustable by UI
-    publisher - subscriber relationship configurable through router table
-    sdkconfig.default 
+KCONFIG:
+    • config.h -> menuconfig |
+    • all configuration adjustable by UI
+    • publisher - subscriber relationship configurable through router table
+    • sdkconfig.default 
 
-• How to add sensor document modification due to the change of msg_bus
+How to add sensor document modification due to the change of msg_bus
 
-• WIFI start sequence modify, currently all publisher need to wait wifi   
-  connection to start, not the best practice
+WIFI start sequence modify, currently all publisher need to wait wifi    connection to start, not the best practice
 
 
 
@@ -29,7 +28,7 @@ Plug‑and‑play sinks: add UART / HTTP / BLE / MQTT in one descriptor, no task
 
 Add a new sensor → write HAL + service that publishes either json_str or jpeg.fb; no changes to any uploader.
 
-Cleaner code‑base: UART task ‑80 % LOC, uploader ‑60 % LOC, registry handles all queues.
+Cleaner code‑base: UART task ‑50 % LOC, uploader ‑80 % LOC, registry handles all queues.
 
 The project is now genuinely “drop‑in sensor / drop‑in transport” ready.
 

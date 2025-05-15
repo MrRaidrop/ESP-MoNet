@@ -1,145 +1,103 @@
-# HTTPS Server (C + OpenSSL)
+# Lightweight HTTPS Server for ESP32-S3 Projects
 
-A lightweight custom HTTPS server implemented in C using OpenSSL. It serves firmware over secure HTTPS and logs incoming JSON data from ESP32 devices. Suitable for OTA and telemetry.
+A tiny C11 + OpenSSL HTTPS server designed to work out‑of‑the‑box with ESP‑MoNet / ESP32‑S3 firmware.  
+It is **single‑binary, thread‑per‑connection**, and fully self‑contained (no external HTTP libraries).
 
-## Features
+## Core Features
 
-- Secure HTTPS communication with TLS 1.2+
-- `GET /firmware.bin` for firmware download (supports HTTP Range)
-- `GET /firmware.sha256` returns firmware SHA256 hash
-- `POST /data` accepts and logs JSON payloads
-- Multithreaded design, supports up to 10 concurrent clients
-- Can run as a background service using `systemd`
-- And sorry it is a little bit hard to read the code, I didn't make it modular because this project is not about the server.
-
-## Directory Structure
+| Endpoint | Method | Purpose | Notes |
+|----------|--------|---------|-------|
+| `/status` | **GET** | Returns server uptime in seconds. | JSON `{ "uptime": N }` |
+| `/data`   | **POST** | Accepts JSON telemetry from ESP32. | Echoes `{ "result":"ok" }`. |
+| `/firmware.bin` | **GET** | OTA firmware download. | Supports `Range: bytes=<start>-`, returns `206 Partial Content`. |
+| `/firmware.sha256` | **GET** | Hex SHA‑256 of current firmware. | 64 hex chars. |
+| `/image`  | **POST** | Upload JPEG from OV2640 (QVGA). | Saves under `images/` (200 MB rolling quota) and returns `201 Created` + `Location:`. |
 
 ```
-/opt/myserver/
-├── https_server          # Compiled HTTPS server binary
-├── cert.pem              # Self-signed certificate
-├── key.pem               # Private key
-├── firmware.bin          # Firmware file to be served
-├── https_data.log        # Log file for incoming JSON payloads
+images/
+└─ 20250515_031259_1804289383.jpg
 ```
 
-## Compilation
+## Project Layout
 
-Install OpenSSL dev libraries:
+```
+server/
+├── include/server/    # public headers
+│   ├── handlers.h     # handler API + http_request_t
+│   ├── router.h
+│   ├── file_store.h
+│   └── log.h
+├── src/
+│   ├── net/ssl_server.c
+│   ├── router.c
+│   ├── handlers/      # one .c per endpoint
+│   └── storage/file_store.c
+└── tests/             # curl smoke‑tests
+```
+
+## Build & Run
 
 ```bash
-sudo apt update
-sudo apt install libssl-dev
+mkdir build && cd build
+cmake ..
+make -j
+# copy self‑signed cert/key or point to your own in main.c
+cp ../cert.pem ../key.pem .
+./https_server &
 ```
 
-Compile using:
+You can see my bash script on auto_build.sh
+
+All dependencies are standard on Ubuntu:
 
 ```bash
-gcc server.c -o https_server -lssl -lcrypto -lpthread
+sudo apt install build-essential cmake libssl-dev
 ```
 
-Place the executable and `firmware.bin` into `/opt/myserver/`.
+## Quick Tests
 
-## Running with systemd
-
-Create `/etc/systemd/system/my_https_server.service`:
-
-```ini
-[Unit]
-Description=My HTTPS OTA Server
-After=network.target
-
-[Service]
-ExecStart=/opt/myserver/https_server
-WorkingDirectory=/opt/myserver
-Restart=on-failure
-RestartSec=3
-Type=simple
-User=www-data
-Group=www-data
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
+```bash
+curl -k https://localhost:8443/status
+curl -k -X POST https://localhost:8443/data      -H "Content-Type: application/json"      -d '{"type":"light","value":123}'
+curl -k -o fw.bin https://localhost:8443/firmware.bin
+curl -k -H "Range: bytes=1000-" -o part.bin https://localhost:8443/firmware.bin
+curl -k --data-binary @test.jpg -H "Content-Type: image/jpeg"      https://localhost:8443/image
 ```
 
-> If your certificate path differs, modify:
+You can change localhost to your web server port.
+By the way Oracle cloud offers free server, I'm using it, a little bit light, but enough in this case.
+
+## Adding a New Handler
+
+1. **Create file** `src/handlers/foo_handler.c`.
+2. Implement the unified signature:
 
 ```c
-SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM);
-SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM);
+int foo_handler(SSL *ssl, const http_request_t *req) {
+    const char *resp = "HTTP/1.1 200 OK\r\n\r\nHello";
+    return SSL_write(ssl, resp, strlen(resp));
+}
 ```
 
-Then reload and start:
+3. **Declare** in `include/server/handlers.h`.
+4. **Register** in `src/router.c`:
 
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable my_https_server.service
-sudo systemctl start my_https_server.service
+```c
+{"GET", "/foo", foo_handler},
 ```
 
-## API Endpoints
+Re‑build and your endpoint is live.
+To be honest, it should be enough for the data handling of Iot devices.
 
-### `GET /firmware.bin`
+## Config Tuning
 
-Download firmware with optional Range:
-
-```bash
-curl -k --http1.1 https://your.server.ip:8443/firmware.bin -o firmware_out.bin
-```
-
-Partial download:
-
-```bash
-curl -k --http1.1 https://your.server.ip:8443/firmware.bin -H "Range: bytes=0-1023" -o partial.bin
-```
-
-### `GET /firmware.sha256`
-
-Returns SHA256 hash of `firmware.bin`:
-
-```bash
-curl -k https://your.server.ip:8443/firmware.sha256
-```
-
-### `POST /data`
-
-Send JSON data:
-
-```bash
-curl -k https://your.server.ip:8443/data      -H "Content-Type: application/json"      -d '{"light": 895, "ts": "2025-04-12T14:23:01"}'
-```
-
-Will be appended to `https_data.log`.
-
-### `GET /status`
-
-Returns server uptime in seconds:
-
-```json
-{"uptime": 12345}
-```
-
-## Log Viewing
-
-```bash
-tail -f /opt/myserver/https_data.log
-```
-
-Or via journalctl:
-
-```bash
-sudo journalctl -u my_https_server.service --since "10 minutes ago"
-```
-
-## Security Notes
-
-- For production, use certificates from a trusted CA
-- Certificates must be readable by the service user
-- Server handles one request per connection
-- Supports standard Range headers for OTA
+- **Port / cert / key / max_clients** → `server_config_t` in `main.c`.
+- **Image quota** → `FILE_STORE_MAX_BYTES` in `file_store.h`.
 
 ## License
 
-MIT License — Free to use and modify.
+MIT (see `LICENSE`).
+
+---
+
+*Let's go~*
