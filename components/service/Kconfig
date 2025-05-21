@@ -1,0 +1,98 @@
+menu "Monet Service Modules"
+
+config CAMERA_SERVICE_ENABLE
+    bool "Enable camera service"
+    default y
+
+config UART_SERVICE_ENABLE
+    bool "Enable UART service"
+    default y
+
+config BLE_SERVICE_ENABLE
+    bool "Enable BLE service"
+    default y
+
+config HTTP_UPLOADER_SERVICE_ENABLE
+    bool "Enable HTTP uploader service"
+    default y
+
+menu "Router (publisher ➜ sink)"
+
+comment "Sensor → HTTP uploader"
+config ROUTE_SENSOR_LIGHT_HTTP
+    bool "Upload LIGHT sensor JSON via HTTP"
+    default y
+
+config ROUTE_SENSOR_TEMP_HTTP
+    bool "Upload TEMP&Humidity JSON via HTTP"
+    default y
+
+config ROUTE_JPEG_HTTP
+    bool "Upload JPEG frame via HTTP"
+    default y
+
+comment "Sensor → HTTP sink"
+config ROUTE_SENSOR_GROUP_HTTP
+    bool "Forward all sensor topics to HTTP"
+    default n
+
+comment "Sensor → UART sink"
+config ROUTE_SENSOR_GROUP_UART
+    bool "Forward all sensor topics to UART"
+    default y
+
+comment "Sensor → BLE sink"
+config ROUTE_SENSOR_GROUP_BLE
+    bool "Forward all sensor topics to BLE notify"
+    default y
+
+endmenu  # Router
+
+menu "Camera Settings"
+
+config CAMERA_DYNAMIC_INTERVAL
+    bool "Adjust capture interval based on Wi-Fi RSSI"
+    default y
+    help
+        If enabled, the JPEG frame rate is chosen automatically
+        according to the current Wi-Fi RSSI thresholds below.
+        If disabled, the fixed interval CONFIG_CAMERA_CAPTURE_INTERVAL_MS
+        is used.
+
+config CAMERA_CAPTURE_INTERVAL_MS
+    int "Fixed capture interval (ms)"
+    range 100 60000
+    default 5000
+    depends on !CAMERA_DYNAMIC_INTERVAL
+
+# ── Only visible when dynamic mode is ON ─────────────────────────────
+if CAMERA_DYNAMIC_INTERVAL
+
+config CAMERA_RSSI_FAST_THRESH
+    int "Fast-FPS RSSI threshold (dBm)"
+    default -60
+
+config CAMERA_RSSI_MED_THRESH
+    int "Medium-FPS RSSI threshold (dBm)"
+    default -70
+
+config CAMERA_INTERVAL_FAST_MS
+    int "Interval when RSSI >= FAST_THRESH (ms)"
+    range 100 1000
+    default 333
+
+config CAMERA_INTERVAL_MED_MS
+    int "Interval when FAST_THRESH > RSSI >= MED_THRESH (ms)"
+    range 200 5000
+    default 1000
+
+config CAMERA_INTERVAL_SLOW_MS
+    int "Interval when RSSI < MED_THRESH (ms)"
+    range 1000 60000
+    default 5000
+
+endif  # CAMERA_DYNAMIC_INTERVAL
+endmenu  # Camera Settings
+
+
+endmenu  # Service

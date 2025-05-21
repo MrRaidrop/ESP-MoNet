@@ -66,18 +66,27 @@ static bool uart_sink_handler(const msg_t *m) {
   }
 }
 
+static const msg_topic_t uart_topics[] = {
+#if CONFIG_ROUTE_SENSOR_GROUP_UART
+    EVENT_GROUP_SENSOR,
+#endif
+    MSG_TOPIC_END
+};
+
 /// Service descriptor for automatic registration
 static const service_desc_t uart_service_desc = {
-    .name = "uart_service",
-    .task_fn = uart_service_task,
-    .task_name = "uart_tx_task",
+    .name       = "uart_service",
+#if CONFIG_UART_SERVICE_ENABLE
+    .task_fn    = uart_service_task,
+#else
+    .task_fn    = NULL,                 // disabled at build-time
+#endif
+    .role       = SERVICE_ROLE_SUBSCRIBER,
+    .topics     = uart_topics,
+    .sink_cb    = uart_sink_handler,
     .stack_size = 4096,
-    //.priority   = 5,
-    .priority = 6, // Higher priority for test purposes, can be adjusted to 5
-    .role = SERVICE_ROLE_SUBSCRIBER,
-    .topics = (const msg_topic_t[]){EVENT_GROUP_SENSOR, MSG_TOPIC_END},
-    .sink_cb = uart_sink_handler};
-
+    .priority   = 6,
+};
 /**
  * @brief Task to forward sensor messages to UART.
  *

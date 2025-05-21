@@ -1,22 +1,29 @@
 #include <stdint.h>  
 #include <stddef.h> 
+#include "sdkconfig.h"
 #include "net/https_post_hal.h"
 #include "esp_http_client.h"
-#include "esp_log.h"
 #include "utils/config.h"
 #include "utils/log.h"
 
 #define TAG "HTTP_POST"
 
+#ifndef CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK
+#define CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK 0
+#endif
+#ifndef CONFIG_HTTPS_USE_GLOBAL_CA_STORE
+#define CONFIG_HTTPS_USE_GLOBAL_CA_STORE 0
+#endif
+
 bool http_post_send(const char* json_str)
 {
     esp_http_client_config_t config = {
         .url = CONFIG_HTTPS_SERVER_URL,
-        .cert_pem = CONFIG_HTTPS_CA_CERT,
+        .cert_pem = CONFIG_HTTPS_CA_CERT_PEM,
         .method = HTTP_METHOD_POST,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .skip_cert_common_name_check = CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK,
-        .use_global_ca_store = CONFIG_HTTPS_USE_GLOBAL_CA_STORE,
+        .use_global_ca_store        = CONFIG_HTTPS_USE_GLOBAL_CA_STORE,
         .timeout_ms = 5000,
     };
 
@@ -56,7 +63,7 @@ bool http_post_image(const uint8_t *data, size_t len)
         .cert_pem = NULL, // Add CA cert if needed
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .skip_cert_common_name_check = CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK,
-        .use_global_ca_store = CONFIG_HTTPS_USE_GLOBAL_CA_STORE,
+        .use_global_ca_store        = CONFIG_HTTPS_USE_GLOBAL_CA_STORE,
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);

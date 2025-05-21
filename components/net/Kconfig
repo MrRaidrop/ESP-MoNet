@@ -1,0 +1,23 @@
+menu "Networking"
+
+config HTTPS_SERVER_URL
+    string "HTTPS server URL"
+    default "https://40.233.83.32:8443/data"
+
+config HTTPS_CA_CERT_PEM
+    string "PEM CA certificate (paste as literal)"
+    default ""
+
+config HTTPS_SKIP_COMMON_NAME_CHECK
+    bool "Skip Common-Name check"
+    default y
+
+config HTTPS_USE_GLOBAL_CA_STORE
+    bool "Use global CA store"
+    default n
+
+config HTTP_UPLOADER_SERVICE_ENABLE
+    bool "Enable HTTP uploader service"
+    default y
+
+endmenu

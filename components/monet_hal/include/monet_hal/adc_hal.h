@@ -11,17 +11,18 @@ extern "C" {
 /**
  * @brief Initialize ADC channel.
  *
- * @param channel ADC1 channel to configure.
+ * @param chan_cfg ADC1 channel configuration.
+ *                 This should be a value from `adc1_channel_t`.
  */
-void adc_hal_init(adc1_channel_t channel);
+void adc_hal_init(int chan_cfg);
 
 /**
  * @brief Read raw ADC value from the given channel.
  *
- * @param channel ADC1 channel to read.
+ * @param chan_cfg ADC1 channel to read.
  * @return Raw ADC value (0~4095).
  */
-int adc_hal_read(adc1_channel_t channel);
+int adc_hal_read(int chan_cfg);
 
 #ifdef __cplusplus
 }

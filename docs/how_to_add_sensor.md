@@ -118,6 +118,22 @@ If you want to dive into group control, like temp to uart and ble, light and cam
 
 ---
 
+## Step 2.5: Declare default router
+Add a Kconfig bool (e.g. CONFIG_ROUTE_SENSOR_MYTYPE_HTTP) under Service → Router and wrap the .topics array of your preferred sinks:
+
+```c
+static const msg_topic_t http_topics[] = {
+#if CONFIG_ROUTE_SENSOR_MYTYPE_HTTP
+    EVENT_SENSOR_MYTYPE,
+#endif
+    MSG_TOPIC_END
+};
+```
+This allows users to enable/disable cloud upload via idf.py menuconfig without touching code.
+
+
+---
+
 ## Step 3: Add to CMake
 
 Make sure the source files are listed in your build:

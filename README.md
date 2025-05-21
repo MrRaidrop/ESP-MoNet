@@ -19,6 +19,7 @@ The same bus already fans‑out data to Wi‑Fi HTTP, BLE GATT and UART; hoo
 | v0.5    | 2025‑05‑03 | Zero‑copy camera, binary cache, adaptive FPS, new docs |
 | v0.6    | 2025‑05‑07 | Introduced `service_registry`:<br>• All services now registered via `service_registry_register()`<br>• Can be controlled under group subscription |
 | v0.7 — Sink / Uploader Refactor | 2025‑05‑10 | • Added sink-callback architecture in `service_registry`<br>• Replaced monolithic `data_uploader_service` with `http_uploader_service`<br>• `msg_t` gains `.release()` hook – JPEG owner returns `camera_fb_t` safely<br>• UART & HTTP now consume JSON-first<br>• Only JPEG needs custom code (you can always add your own)<br>• Will write a document showing how to do it |
+| **v0.8 — Kconfig Migration**      | 2025-05-20 | • All project settings exposed via *menuconfig*<br>• `sdkconfig.defaults` shipped for one-click build<br>• Router table (publisher ➜ sink) selectable in UI<br>• `utils/config.h` shrunk to a thin wrapper | ✔ No hard-coded constants remain<br>  |
 
 
 ---
@@ -27,8 +28,7 @@ The same bus already fans‑out data to Wi‑Fi HTTP, BLE GATT and UART; hoo
 
 | Version                           | ETA     | Key Changes                                                                                                                                                                                                                                        | Delivery Criteria                                                                                                |
 | --------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **v0.8 — Kconfig Migration**      | 2025‑05 | • Refactor `utils/config.h` into **component-level Kconfig** files<br>• Provide `sdkconfig.defaults` example<br>• Update README “Quick Start” to use `idf.py menuconfig`<br>• CI validates default SDK config                                      | \* All settings configurable via menuconfig<br>\* `config.h` becomes a wrapper of `sdkconfig.h` • Use Router table to control sub-pub logic, implement K-config for this  • use sdkconfig.default to replace current sdkconfig structure                |
-| **v0.9 — BLE Service & OTA Refinement** | 2025‑05 | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc                                    | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible \* OTA rollback<br>                    |
+| **v0.9 — BLE Service & OTA Refinement** | 2025‑06 | • Refactor **BLE GATT** layer: separate *profile* and *service* logic<br>• Introduce `ble_register_characteristic()` API<br>• Demo: add a custom Notify in 5 lines<br>• Add *How to Add BLE Characteristic* doc                                    | \* BLE unit tests cover new API<br>\* Existing Light Notify functionality remains compatible \* OTA rollback<br>                    |
 | **v1.0 — Quality Release**        | 2025‑06 | • **≥ 80 % unit test coverage** (cache, encoder, msg\_bus, registry, BLE API)<br>• GitHub Actions: build + `ctest` + `clang-format` all pass<br>• Public firmware binary + 2‑min demo video<br>• Complete bilingual docs and architecture diagrams | \* CI passes all checks<br>\* CHANGELOG & release notes finalized<br>\* README features embedded demo video link |
 
 ---
@@ -332,5 +332,5 @@ MIT License — Use freely, modify, and integrate.
 
 ---
 
-🛠️ Last Updated: May 3, 2025  
+🛠️ Last Updated: May 20, 2025  
 Made with ❤️ by [Greyson Yu](https://github.com/MrRaidrop)

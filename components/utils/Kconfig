@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MIT
+# Utils component — cache settings
+
+menu "Monet Utils"
+
+menu "Cache Settings"
+
+config CACHE_MAX_ITEMS
+    int "Maximum number of cache items"
+    range 1 256
+    default 32
+    help
+        Maximum number of elements the in-memory cache can hold
+        before it starts overwriting old data.
+
+config CACHE_ITEM_SIZE
+    int "Cache item size (bytes)"
+    range 16 512
+    default 64
+    help
+        Size, in bytes, of each cache entry.  Keep this value
+        aligned with the largest encoded sensor message length.
+
+config CACHE_FLUSH_INTERVAL_MS
+    int "Cache flush interval (ms)"
+    range 100 60000
+    default 5000
+    help
+        How often the cache is flushed to the next stage
+        (e.g. persistent storage or network upload).
+
+endmenu  # Cache Settings
+
+endmenu  # Utils

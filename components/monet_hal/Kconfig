@@ -1,0 +1,47 @@
+menu "Monet Hardware Abstraction Layer"
+
+menu "Wi-Fi Station"
+config WIFI_SSID
+    string "Wi-Fi SSID"
+    default "zhenghao的iPhone"
+config WIFI_PASSWORD
+    string "Wi-Fi password"
+    default "12345678"
+endmenu
+
+menu "Light Sensor (ADC)"
+config LIGHT_SENSOR_CHANNEL
+    int "ADC channel for light sensor"
+    range 0 9
+    default 2
+endmenu
+
+menu "UART (debug / data)"
+
+config UART_PORT_NUM
+    int "UART port number"
+    range 0 2
+    default 1
+    help
+        0 = UART0 (console), 1 = UART1, 2 = UART2 (ESP32-S3 has 3 controllers)
+
+config UART_TX_PIN
+    int "UART TX GPIO number"
+    range 0 48
+    default 47
+
+config UART_RX_PIN
+    int "UART RX GPIO number"
+    range 0 48
+    default 21
+
+config UART_BAUD_RATE
+    int "UART baud rate"
+    default 921600
+    help
+        115200 / 921600 are common. 921600 is OK on USB-CDC.
+
+endmenu
+
+
+endmenu  # HAL

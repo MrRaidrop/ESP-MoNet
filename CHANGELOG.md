@@ -1,24 +1,35 @@
-## [0.8.0 PREV] – 2025‑05‑12
+## [0.8.1 PREV] – 2025‑05‑20
 **TL;DR** — TODO LIST for 0.8
-
-server code update: 
-    • jpeg frame handle
-    • more clean structure
-    • throughout test
-    • README_SERVER update
-
-KCONFIG:
-    • config.h -> menuconfig |
-    • all configuration adjustable by UI
-    • publisher - subscriber relationship configurable through router table
-    • sdkconfig.default 
 
 How to add sensor document modification due to the change of msg_bus
 
 WIFI start sequence modify, currently all publisher need to wait wifi    connection to start, not the best practice
 
+---
 
+## [0.8.0] – 2025-05-20
 
+### Added
+- **Component-level Kconfig** files (`components/*/Kconfig`) and optional global menu via `Kconfig.projbuild`.
+- **Router menu** – enable/disable `EVENT_* → sink` paths with one click (`Service → Router`).
+- **Camera dynamic FPS** configurable (`CAMERA_DYNAMIC_INTERVAL`, RSSI thresholds, fixed-interval fallback).
+- **sdkconfig.defaults** – CI and newcomers build with `idf.py defconfig` in a clean tree.
+- **server code update:**
+    • jpeg frame handle
+    • more clean structure
+    • throughout test
+    • README_SERVER update
+
+### Changed
+- `utils/config.h` is now a two-line wrapper around `sdkconfig.h`; all legacy `#define` moved to Kconfig.
+- README “Quick Setup” updated (uses `defconfig`, explains menu location).
+- CI workflow calls `idf.py defconfig && idf.py build` to validate defaults.
+
+### Removed
+- Hard-coded constants (`CACHE_MAX_ITEMS`, Wi-Fi SSID, HTTPS URL, etc.).
+- Legacy per-sensor uploader tasks (superseded by router + sink_cb logic).
+
+---
 
 ## [0.7.0] – 2025‑05‑10
 **TL;DR** — What You Get After v0.7

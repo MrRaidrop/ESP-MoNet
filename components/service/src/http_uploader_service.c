@@ -57,18 +57,38 @@ EXIT:
     return ok;
 }
 
+static const msg_topic_t http_topics[] = {
+#if CONFIG_ROUTE_SENSOR_GROUP_HTTP
+    EVENT_GROUP_SENSOR,
+#endif
+#if CONFIG_ROUTE_SENSOR_LIGHT_HTTP
+    EVENT_SENSOR_LIGHT,
+#endif
+#if CONFIG_ROUTE_JPEG_HTTP
+    EVENT_SENSOR_JPEG,
+#endif
+    MSG_TOPIC_END
+};
+
+
 static const service_desc_t http_uploader_desc = {
     .name       = "http_uploader",
     .task_fn    = NULL,                   
     .stack_size = 4096,
     .priority   = 5,
     .role       = SERVICE_ROLE_SUBSCRIBER,
-    .topics     = (const msg_topic_t[]){ EVENT_GROUP_SENSOR, MSG_TOPIC_END },
+    .topics     = http_topics,
     .sink_cb    = http_sink_handler
 };
+
+_Static_assert(sizeof(http_topics)/sizeof(http_topics[0]) > 1, "No topics configured for HTTP uploader");
 
 /* accessor – for main.c / auto‑register */
 const service_desc_t* get_http_uploader_service(void)
 {
+#if CONFIG_HTTP_UPLOADER_SERVICE_ENABLE
     return &http_uploader_desc;
+#else
+    return NULL;
+#endif
 }

@@ -2487,6 +2487,102 @@ CONFIG_WIFI_PROV_STA_ALL_CHANNEL_SCAN=y
 # end of Wi-Fi Provisioning Manager
 
 #
+# Monet Hardware Abstraction Layer
+#
+
+#
+# Wi-Fi Station
+#
+CONFIG_WIFI_SSID="zhenghao的iPhone"
+CONFIG_WIFI_PASSWORD="12345678"
+# end of Wi-Fi Station
+
+#
+# Light Sensor (ADC)
+#
+CONFIG_LIGHT_SENSOR_CHANNEL=2
+# end of Light Sensor (ADC)
+
+#
+# UART (debug / data)
+#
+CONFIG_UART_PORT_NUM=2
+CONFIG_UART_TX_PIN=1
+CONFIG_UART_RX_PIN=2
+CONFIG_UART_BAUD_RATE=921600
+# end of UART (debug / data)
+# end of Monet Hardware Abstraction Layer
+
+#
+# Networking
+#
+CONFIG_HTTPS_SERVER_URL="https://40.233.83.32:8443/data"
+CONFIG_HTTPS_CA_CERT_PEM=""
+CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK=y
+# CONFIG_HTTPS_USE_GLOBAL_CA_STORE is not set
+CONFIG_HTTP_UPLOADER_SERVICE_ENABLE=y
+# end of Networking
+
+#
+# Monet Service Modules
+#
+CONFIG_CAMERA_SERVICE_ENABLE=y
+CONFIG_UART_SERVICE_ENABLE=y
+CONFIG_BLE_SERVICE_ENABLE=y
+
+#
+# Router (publisher ➜ sink)
+#
+
+#
+# Sensor → HTTP uploader
+#
+CONFIG_ROUTE_SENSOR_LIGHT_HTTP=y
+CONFIG_ROUTE_SENSOR_TEMP_HTTP=y
+CONFIG_ROUTE_JPEG_HTTP=y
+
+#
+# Sensor → HTTP sink
+#
+# CONFIG_ROUTE_SENSOR_GROUP_HTTP is not set
+
+#
+# Sensor → UART sink
+#
+CONFIG_ROUTE_SENSOR_GROUP_UART=y
+
+#
+# Sensor → BLE sink
+#
+CONFIG_ROUTE_SENSOR_GROUP_BLE=y
+# end of Router (publisher ➜ sink)
+
+#
+# Camera Settings
+#
+CONFIG_CAMERA_DYNAMIC_INTERVAL=y
+CONFIG_CAMERA_RSSI_FAST_THRESH=-60
+CONFIG_CAMERA_RSSI_MED_THRESH=-70
+CONFIG_CAMERA_INTERVAL_FAST_MS=333
+CONFIG_CAMERA_INTERVAL_MED_MS=1000
+CONFIG_CAMERA_INTERVAL_SLOW_MS=5000
+# end of Camera Settings
+# end of Monet Service Modules
+
+#
+# Monet Utils
+#
+
+#
+# Cache Settings
+#
+CONFIG_CACHE_MAX_ITEMS=64
+CONFIG_CACHE_ITEM_SIZE=128
+CONFIG_CACHE_FLUSH_INTERVAL_MS=5000
+# end of Cache Settings
+# end of Monet Utils
+
+#
 # Camera configuration
 #
 CONFIG_OV7670_SUPPORT=y
