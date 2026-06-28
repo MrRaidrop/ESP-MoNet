@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: MIT
+# monet_core component — optional experimental C++ refactor/demo layer.
+
+menu "Monet Core"
+
+config MONET_CPP_EXPERIMENTAL
+    bool "Enable experimental C++ wrappers/refactor layer"
+    default n
+    help
+        Compile the optional C++ demonstration layer that lives under
+        components/monet_core/src_cpp and include_cpp. It shows how the
+        existing C/FreeRTOS architecture maps to embedded-friendly C++
+        (RAII LockGuard, RAII CameraFrame, type-safe Queue<T,N>, a Logger
+        backend interface, and a MessageBus class with C API wrappers).
+
+        When this is disabled (the default) the firmware builds and runs
+        exactly as the stable pure-C path: no C++ source is compiled and
+        there is no flash/RAM cost.
+
+        This layer is intentionally a parallel demo. It does NOT replace
+        the production msg_bus.c / service_registry.c paths.
+
+if MONET_CPP_EXPERIMENTAL
+
+choice MONET_CPP_LOGGER_BACKEND
+    prompt "C++ Logger backend (build-time selection)"
+    default MONET_CPP_LOGGER_BACKEND_UART
+    help
+        Build-time selection of the default Logger backend returned by
+        logger_default_backend(). Runtime polymorphism through the
+        LoggerBackend interface is still available; this choice only
+        picks which concrete backend is wired up by default so we do not
+        pay flash for transports we never select.
+
+config MONET_CPP_LOGGER_BACKEND_UART
+    bool "UART console backend"
+
+config MONET_CPP_LOGGER_BACKEND_USB
+    bool "USB-CDC backend"
+
+endchoice
+
+endif # MONET_CPP_EXPERIMENTAL
+
+endmenu # Monet Core

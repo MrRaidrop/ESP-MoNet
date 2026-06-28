@@ -25,6 +25,10 @@
 #include "service/http_uploader_service.h"
 #include "monet_core/service_registry.h"
 
+#if CONFIG_MONET_CPP_EXPERIMENTAL
+#include "monet_core_cpp/cpp_demo.h"   /* optional C++ demo layer (Kconfig) */
+#endif
+
 #define TAG "MAIN"
 
 // For testing OTA update logic after 30s
@@ -62,6 +66,12 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_erase());
         ESP_ERROR_CHECK(nvs_flash_init());
     }
+
+#if CONFIG_MONET_CPP_EXPERIMENTAL
+    /* Experimental C++ wrapper/refactor demo. Compiled out entirely when
+     * CONFIG_MONET_CPP_EXPERIMENTAL=n, so the default C path is unchanged. */
+    monet_cpp_demo_run();
+#endif
 
     service_registry_register(get_light_sensor_service());
 
