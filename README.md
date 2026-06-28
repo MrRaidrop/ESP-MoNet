@@ -8,17 +8,16 @@ auto-registers with a **service registry** and talks over a **message bus** (Fre
 queues, publish/subscribe). Adding a sensor is one HAL + one service file; adding a cloud
 sink is one subscriber. The same bus fans data out to Wi-Fi HTTPS, BLE GATT and UART.
 
-## Highlights
+## Features
 
-- **Live MJPEG camera stream** — the board hosts `http://<board-ip>/`; open it in a
-  browser for a live OV2640 feed (paced ~12 fps, ~65 fps uncapped at QVGA).
-- **Message bus + service registry** — each service is an isolated FreeRTOS task with its
-  own stack/priority; publishers fan out to any number of subscriber sinks.
-- **Zero-copy JPEG** pipeline (`camera_fb_t*` passthrough with an explicit release hook).
-- **HTTPS upload** of JSON telemetry + JPEG, verified against an embedded self-signed CA.
-- **BLE GATT notify**, **UART**, **ADC light sensor**, **DHT22**.
-- **OTA** over HTTPS (SHA-256 + dual-OTA partitions).
-- **Optional C++ layer** (`CONFIG_MONET_CPP_EXPERIMENTAL`, off by default) — RAII +
+- **Camera** — live MJPEG stream served by the board at `http://<board-ip>/` (OV2640, QVGA);
+  zero-copy JPEG capture (`camera_fb_t*` passthrough with an explicit release hook).
+- **Message bus + service registry** — each service runs as its own FreeRTOS task with its
+  own stack and priority; publishers fan out to subscriber sinks over a pub/sub bus.
+- **Networking** — HTTPS upload of JSON telemetry and JPEG, verified against an embedded
+  self-signed CA; OTA over HTTPS (SHA-256, dual-OTA partitions).
+- **Sensors / IO** — ADC light sensor, DHT22, UART, BLE GATT notify.
+- **Optional C++ layer** (`CONFIG_MONET_CPP_EXPERIMENTAL`, off by default) — RAII and
   templates over the FreeRTOS primitives; see [docs/cpp_refactor.md](docs/cpp_refactor.md).
 
 ## Live camera stream
