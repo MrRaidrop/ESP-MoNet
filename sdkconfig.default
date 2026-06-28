@@ -1,9 +1,14 @@
 # --- MoNet Project Defaults ------------------
+# EDIT these two for your network before building:
 CONFIG_WIFI_SSID="your_ssid"
 CONFIG_WIFI_PASSWORD="your_password"
 
-CONFIG_HTTPS_SERVER_URL="https://40.233.83.32:8443/data"
-CONFIG_HTTPS_SKIP_CN_CHECK=y
+# Point these at your server (the bundled server/ defaults to port 8443).
+# The firmware verifies the server against the cert embedded from
+# components/net/certs/server_ca.pem (regenerate with server/make-certs.sh).
+CONFIG_HTTPS_SERVER_URL="https://192.168.1.100:8443/data"
+CONFIG_HTTPS_IMAGE_URL="https://192.168.1.100:8443/image"
+CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK=y
 # CONFIG_HTTPS_USE_GLOBAL_CA_STORE is not set
 
 CONFIG_CAMERA_SERVICE_ENABLE=y
@@ -12,6 +17,13 @@ CONFIG_CAMERA_RSSI_FAST_THRESH=-60
 CONFIG_CAMERA_INTERVAL_FAST_MS=333
 CONFIG_ROUTE_SENSOR_LIGHT_HTTP=y
 CONFIG_ROUTE_JPEG_HTTP=y
+
+# PSRAM is REQUIRED by the camera (OV2640 JPEG framebuffer lives in PSRAM).
+# Octal (OPI) PSRAM, matching the ESP32-S3-WROOM-1 N8R8 module.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_TYPE_AUTO=y
+CONFIG_SPIRAM_SPEED_80M=y
 
 CONFIG_CACHE_MAX_ITEMS=32
 CONFIG_CACHE_ITEM_SIZE=128
