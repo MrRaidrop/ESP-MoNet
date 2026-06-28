@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -20,8 +21,19 @@ static int listen_fd = -1;
 
 
 /* --- 每个连接线程 --- */
+/* The TLS handshake (SSL_accept) is done here, in the per-connection thread,
+ * NOT in the accept loop. Otherwise a single slow/stalled handshake blocks the
+ * whole server (head-of-line blocking). */
 static void* client_thread(void* arg) {
-    SSL* ssl = (SSL*)arg;
+    int cli = (int)(intptr_t)arg;
+
+    SSL* ssl = SSL_new(ctx);
+    SSL_set_fd(ssl, cli);
+    if (SSL_accept(ssl) <= 0) {
+        SSL_free(ssl);
+        close(cli);
+        return NULL;
+    }
 
     char buf[REQ_BUF_SIZE] = {0};
     int len = SSL_read(ssl, buf, sizeof(buf) - 1);
@@ -35,6 +47,7 @@ static void* client_thread(void* arg) {
 EXIT:
     SSL_shutdown(ssl);
     SSL_free(ssl);
+    close(cli);
     return NULL;
 }
 
@@ -93,16 +106,11 @@ int ssl_server_start(const server_config_t* cfg) {
         int cli = accept(listen_fd, NULL, NULL);
         if (cli < 0) continue;
 
-        SSL* ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, cli);
-        if (SSL_accept(ssl) <= 0) {
-            SSL_free(ssl);
+        pthread_t tid;
+        if (pthread_create(&tid, NULL, client_thread, (void*)(intptr_t)cli) != 0) {
             close(cli);
             continue;
         }
-
-        pthread_t tid;
-        pthread_create(&tid, NULL, client_thread, ssl);
         pthread_detach(tid);  // 方便回收
     }
     return 0;
