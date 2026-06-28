@@ -6,18 +6,21 @@ idf_component_register(
         src/ble_service.c
         src/data_uploader_service.c
         src/camera_service.c
+        src/mjpeg_service.c
         src/dht22_service.c
         src/http_uploader_service.c
     INCLUDE_DIRS "include"
-    PRIV_REQUIRES 
-        bt 
+    PRIV_REQUIRES
+        bt
         nvs_flash
     REQUIRES
         monet_core
         monet_codec
-        monet_hal                 
+        monet_hal
         net
         OTA
         utils
         esp_event           # FreeRTOS event lope
+        esp_http_server     # MJPEG live stream server
+        esp_wifi            # disable modem power-save for streaming
 )

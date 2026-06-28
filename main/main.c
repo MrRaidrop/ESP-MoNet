@@ -17,6 +17,7 @@
 #include "service/light_sensor_service.h"
 #include "service/ble_service.h"
 #include "service/camera_service.h"
+#include "service/mjpeg_service.h"
 #include "service/wifi_service.h"
 #include "service/uart_service.h"
 #include "OTA/https_ota_service.h" 
@@ -64,6 +65,8 @@ void app_main(void)
 
     service_registry_register(get_light_sensor_service());
 
+    // camera_service (per-frame uploader) is disabled: mjpeg_service owns the
+    // camera for the live stream, and only one camera owner is allowed.
     //service_registry_register(get_camera_service());
     //service_registry_register(get_uart_service());
 
@@ -77,9 +80,9 @@ void app_main(void)
     //service_registry_register(get_wifi_service());
     //service_registry_register(get_light_uploader_service());
     service_registry_register(get_http_uploader_service());
-    /** This is not good, http uploader have to want wifi connected to register itself
-     *  So I have to modify the service_registry, let waiting wifi logic happen
-     */
+
+    /* Live MJPEG stream: owns the camera, serves http://<board-ip>/ */
+    service_registry_register(get_mjpeg_service());
 
     LOGI(TAG, "== STARTING ALL SERVICES ==");
     service_registry_start_all();
