@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9aa0a6"/>
+    </marker>
+  </defs>
+
+  <!-- column captions -->
+  <text x="112" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="#5f6368">PUBLISHERS</text>
+  <text x="480" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="#5f6368">ESP-MoNet runtime</text>
+  <text x="848" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="#5f6368">SINKS</text>
+
+  <text x="286" y="450" text-anchor="middle" font-size="12" fill="#80868b">publish(msg)</text>
+  <text x="674" y="450" text-anchor="middle" font-size="12" fill="#80868b">fan-out · sink_cb</text>
+
+  <!-- arrows: sources -> hub -->
+  <g stroke="#9aa0a6" stroke-width="2" marker-end="url(#arrow)">
+    <line x1="200" y1="76"  x2="366" y2="120"/>
+    <line x1="200" y1="172" x2="366" y2="195"/>
+    <line x1="200" y1="268" x2="366" y2="265"/>
+    <line x1="200" y1="364" x2="366" y2="340"/>
+  </g>
+  <!-- arrows: hub -> sinks -->
+  <g stroke="#9aa0a6" stroke-width="2" marker-end="url(#arrow)">
+    <line x1="594" y1="120" x2="760" y2="76"/>
+    <line x1="594" y1="195" x2="760" y2="172"/>
+    <line x1="594" y1="265" x2="760" y2="268"/>
+    <line x1="594" y1="340" x2="760" y2="364"/>
+  </g>
+
+  <!-- left: publishers -->
+  <g>
+    <rect x="24" y="44"  width="176" height="64" rx="10" fill="#eaf2fe" stroke="#1a73e8"/>
+    <text x="112" y="72"  text-anchor="middle" font-size="15" font-weight="600" fill="#174ea6">Light sensor</text>
+    <text x="112" y="92"  text-anchor="middle" font-size="12" fill="#3c4043">ADC</text>
+
+    <rect x="24" y="140" width="176" height="64" rx="10" fill="#eaf2fe" stroke="#1a73e8"/>
+    <text x="112" y="168" text-anchor="middle" font-size="15" font-weight="600" fill="#174ea6">Camera</text>
+    <text x="112" y="188" text-anchor="middle" font-size="12" fill="#3c4043">OV2640 · zero-copy JPEG</text>
+
+    <rect x="24" y="236" width="176" height="64" rx="10" fill="#eaf2fe" stroke="#1a73e8"/>
+    <text x="112" y="264" text-anchor="middle" font-size="15" font-weight="600" fill="#174ea6">DHT22</text>
+    <text x="112" y="284" text-anchor="middle" font-size="12" fill="#3c4043">temp / humidity</text>
+
+    <rect x="24" y="332" width="176" height="64" rx="10" fill="#eaf2fe" stroke="#1a73e8"/>
+    <text x="112" y="360" text-anchor="middle" font-size="15" font-weight="600" fill="#174ea6">UART in</text>
+    <text x="112" y="380" text-anchor="middle" font-size="12" fill="#3c4043">serial sensor</text>
+  </g>
+
+  <!-- center: hub -->
+  <rect x="366" y="60" width="228" height="340" rx="16" fill="#0d3b66"/>
+  <text x="480" y="98" text-anchor="middle" font-size="20" font-weight="700" fill="#ffffff">ESP-MoNet</text>
+
+  <rect x="392" y="118" width="176" height="74" rx="10" fill="#1b5e96"/>
+  <text x="480" y="148" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Message Bus</text>
+  <text x="480" y="170" text-anchor="middle" font-size="12" fill="#cfe0f0">topic pub/sub · queues</text>
+
+  <rect x="392" y="206" width="176" height="74" rx="10" fill="#1b5e96"/>
+  <text x="480" y="236" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Service Registry</text>
+  <text x="480" y="258" text-anchor="middle" font-size="12" fill="#cfe0f0">FreeRTOS tasks · sink_cb</text>
+
+  <rect x="392" y="300" width="176" height="62" rx="10" fill="#0a2f52"/>
+  <text x="480" y="328" text-anchor="middle" font-size="13" font-weight="600" fill="#ffffff">monet_hal (HAL)</text>
+  <text x="480" y="348" text-anchor="middle" font-size="11" fill="#9db8d4">ADC · UART · Wi-Fi · cam</text>
+
+  <text x="480" y="388" text-anchor="middle" font-size="11" fill="#9db8d4">ESP32-S3 · ESP-IDF / FreeRTOS</text>
+
+  <!-- right: sinks -->
+  <g>
+    <rect x="760" y="44"  width="176" height="64" rx="10" fill="#e7f6ec" stroke="#1e8e3e"/>
+    <text x="848" y="72"  text-anchor="middle" font-size="15" font-weight="600" fill="#176b33">HTTPS upload</text>
+    <text x="848" y="92"  text-anchor="middle" font-size="12" fill="#3c4043">JSON + JPEG → server</text>
+
+    <rect x="760" y="140" width="176" height="64" rx="10" fill="#e7f6ec" stroke="#1e8e3e"/>
+    <text x="848" y="168" text-anchor="middle" font-size="15" font-weight="600" fill="#176b33">MJPEG stream</text>
+    <text x="848" y="188" text-anchor="middle" font-size="12" fill="#3c4043">http://board/ → browser</text>
+
+    <rect x="760" y="236" width="176" height="64" rx="10" fill="#e7f6ec" stroke="#1e8e3e"/>
+    <text x="848" y="264" text-anchor="middle" font-size="15" font-weight="600" fill="#176b33">BLE GATT</text>
+    <text x="848" y="284" text-anchor="middle" font-size="12" fill="#3c4043">notify → phone</text>
+
+    <rect x="760" y="332" width="176" height="64" rx="10" fill="#e7f6ec" stroke="#1e8e3e"/>
+    <text x="848" y="360" text-anchor="middle" font-size="15" font-weight="600" fill="#176b33">UART out</text>
+    <text x="848" y="380" text-anchor="middle" font-size="12" fill="#3c4043">serial / debug</text>
+  </g>
+</svg>

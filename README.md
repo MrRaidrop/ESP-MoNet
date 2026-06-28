@@ -2,6 +2,12 @@
 
 [![Module CI](https://github.com/MrRaidrop/ESP-MoNet/actions/workflows/ci.yml/badge.svg)](https://github.com/MrRaidrop/ESP-MoNet/actions)
 
+<p align="center">
+  <a href="https://mrraidrop.github.io/ESP-MoNet/">
+    <img src="docs/architecture.svg" alt="ESP-MoNet architecture: sensors publish to a message bus / service registry, which fans out to HTTPS, MJPEG stream, BLE and UART sinks" width="100%">
+  </a>
+</p>
+
 A service-oriented embedded framework on **ESP-IDF 5.4 / ESP32-S3**. Every capability —
 light sensor, camera, UART, HTTPS upload, BLE notify — is an independent **service** that
 auto-registers with a **service registry** and talks over a **message bus** (FreeRTOS
