@@ -14,3 +14,9 @@ sdkconfig.old
 *.pyc
 __pycache__/
 frames/
+
+# Server runtime certs/keys — regenerate with server/make-certs.sh.
+# (The firmware's trusted copy, components/net/certs/server_ca.pem, IS committed.)
+server/cert.pem
+server/key.pem
+server/_local_cert/

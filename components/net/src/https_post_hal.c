@@ -15,11 +15,17 @@
 #define CONFIG_HTTPS_USE_GLOBAL_CA_STORE 0
 #endif
 
+/* Server certificate embedded at build time (see components/net/CMakeLists.txt
+ * EMBED_TXTFILES). The TLS client verifies the connection against this cert,
+ * so a self-signed server is trusted without disabling verification.
+ * Regenerate with server/make-certs.sh, then rebuild & reflash. */
+extern const char server_ca_pem_start[] asm("_binary_server_ca_pem_start");
+
 bool http_post_send(const char* json_str)
 {
     esp_http_client_config_t config = {
         .url = CONFIG_HTTPS_SERVER_URL,
-        .cert_pem = CONFIG_HTTPS_CA_CERT_PEM,
+        .cert_pem = server_ca_pem_start,
         .method = HTTP_METHOD_POST,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .skip_cert_common_name_check = CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK,
@@ -60,7 +66,7 @@ bool http_post_image(const uint8_t *data, size_t len)
         .url = POST_IMAGE_URL,
         .method = HTTP_METHOD_POST,
         .timeout_ms = 5000,
-        .cert_pem = NULL, // Add CA cert if needed
+        .cert_pem = server_ca_pem_start,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .skip_cert_common_name_check = CONFIG_HTTPS_SKIP_COMMON_NAME_CHECK,
         .use_global_ca_store        = CONFIG_HTTPS_USE_GLOBAL_CA_STORE,

@@ -10,4 +10,6 @@ idf_component_register(
         nvs_flash
     PRIV_REQUIRES
         utils               # every component should include utils for config or sth
+    EMBED_TXTFILES
+        certs/server_ca.pem # self-signed server cert used as trusted CA (regen via server/make-certs.sh)
 )
