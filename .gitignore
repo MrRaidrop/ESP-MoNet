@@ -5,6 +5,10 @@ build/
 *.map
 sdkconfig.old
 
+# Local board config — holds Wi-Fi creds. Share defaults via sdkconfig.default
+# instead; regenerate the local sdkconfig with ./setup.sh or `idf.py set-target`.
+/sdkconfig
+
 # IDE-specific files
 .vscode/
 *.code-workspace
