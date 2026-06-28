@@ -56,7 +56,7 @@ bool http_post_send(const char* json_str)
     return (err == ESP_OK);
 }
 
-#define POST_IMAGE_URL CONFIG_HTTPS_SERVER_URL
+#define POST_IMAGE_URL CONFIG_HTTPS_IMAGE_URL
 
 bool http_post_image(const uint8_t *data, size_t len)
 {

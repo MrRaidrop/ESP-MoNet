@@ -4,6 +4,13 @@ config HTTPS_SERVER_URL
     string "HTTPS server URL"
     default "https://40.233.83.32:8443/data"
 
+config HTTPS_IMAGE_URL
+    string "HTTPS image upload URL"
+    default "https://40.233.83.32:8443/image"
+    help
+        Endpoint for JPEG uploads. Must point at the server's /image route
+        (the /data route does not store images).
+
 config HTTPS_CA_CERT_PEM
     string "PEM CA certificate (paste as literal)"
     default ""
