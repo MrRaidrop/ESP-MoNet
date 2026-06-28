@@ -11,6 +11,7 @@ if(CONFIG_MONET_CPP_EXPERIMENTAL)
         src_cpp/CameraFrame.cpp
         src_cpp/Logger.cpp
         src_cpp/MessageBus.cpp
+        src_cpp/button_isr_demo.cpp
         src_cpp/cpp_demo.cpp)
     list(APPEND include_dirs include_cpp)
 endif()
@@ -21,4 +22,5 @@ idf_component_register(
     REQUIRES
         utils
         monet_hal
+        esp_driver_gpio     # button_isr_demo: GPIO interrupt
 )

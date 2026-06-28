@@ -26,7 +26,8 @@
 #include "monet_core/service_registry.h"
 
 #if CONFIG_MONET_CPP_EXPERIMENTAL
-#include "monet_core_cpp/cpp_demo.h"   /* optional C++ demo layer (Kconfig) */
+#include "monet_core_cpp/cpp_demo.h"          /* optional C++ demo layer (Kconfig) */
+#include "monet_core_cpp/button_isr_demo.h"   /* GPIO ISR -> queue -> task demo */
 #endif
 
 #define TAG "MAIN"
@@ -71,6 +72,7 @@ void app_main(void)
     /* Experimental C++ wrapper/refactor demo. Compiled out entirely when
      * CONFIG_MONET_CPP_EXPERIMENTAL=n, so the default C path is unchanged. */
     monet_cpp_demo_run();
+    monet_button_isr_demo_start();   /* ISR -> queue -> task; press BOOT to trigger */
 #endif
 
     service_registry_register(get_light_sensor_service());
