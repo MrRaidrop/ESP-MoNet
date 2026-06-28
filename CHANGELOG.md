@@ -1,3 +1,45 @@
+## [0.9.0] – 2026-06-28
+
+**TL;DR** — Live MJPEG camera stream, HTTPS hardening with an embedded CA, an
+optional C++ teaching layer, and one-command setup. Built on ESP-IDF 5.4.1.
+
+### Added
+- **Live MJPEG camera stream** (`mjpeg_service`): the board runs `esp_http_server`
+  on port 80 — `GET /` (viewer page) + `GET /stream` (`multipart/x-mixed-replace`).
+  Open `http://<board-ip>/` for a live OV2640 feed; rate paced via `MJPEG_TARGET_FPS`.
+- **Embedded-CA HTTPS verification**: the firmware verifies the server against a
+  self-signed cert embedded at build time (`EMBED_TXTFILES`,
+  `components/net/certs/server_ca.pem`). `server/make-certs.sh` regenerates the
+  cert/key and refreshes the embedded CA.
+- **Optional C++ layer** (`CONFIG_MONET_CPP_EXPERIMENTAL`, default off): `Queue<T,N>`,
+  `LockGuard`, `CameraFrame` (RAII over the frame release hook), `LoggerBackend`
+  interface, a `MessageBus` wrapper + C bridge, a GPIO-ISR → queue → task demo, and
+  `docs/cpp_refactor.md`.
+- **`setup.sh`** one-command project setup; PSRAM (octal) and the image-upload URL
+  folded into `sdkconfig.default`.
+- Dedicated `CONFIG_HTTPS_IMAGE_URL` so JPEG uploads reach the server's `/image`.
+- `server/viewer.py` to browse stored JPEG uploads.
+
+### Changed
+- **OV2640 XCLK 20 MHz → 24 MHz**: a 20 MHz clock's harmonics fall inside every
+  2.4 GHz Wi-Fi channel and throttle the radio (~280× throughput drop with the
+  camera active). 24 MHz moves them off-channel.
+- Server: TLS handshake moved into the per-connection worker thread (was
+  head-of-line blocking the accept loop); `data_handler` now reads the full body
+  by `Content-Length`.
+- README condensed — removed roadmap/release tables, documented the live stream.
+
+### Fixed
+- Restored the missing `components/monet_core/ld/service_registry.ld` linker script
+  that broke a clean build.
+
+### Removed
+- `sdkconfig` is no longer tracked (it held Wi-Fi credentials); shareable defaults
+  live in `sdkconfig.default`.
+- Stale Chinese README (`README.zh-CN.md`).
+
+---
+
 ## [0.8.1 PREV] – 2025‑05‑20
 **TL;DR** — TODO LIST for 0.8
 
