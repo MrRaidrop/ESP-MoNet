@@ -10,6 +10,10 @@ if(CONFIG_MONET_CPP_EXPERIMENTAL)
     list(APPEND srcs
         src_cpp/CameraFrame.cpp
         src_cpp/Logger.cpp
+        src_cpp/LoggerService.cpp
+        src_cpp/WebLoggerBackend.cpp
+        src_cpp/TaskHealthMonitor.cpp
+        src_cpp/logger_demo.cpp
         src_cpp/MessageBus.cpp
         src_cpp/button_isr_demo.cpp
         src_cpp/cpp_demo.cpp)
@@ -23,4 +27,7 @@ idf_component_register(
         utils
         monet_hal
         esp_driver_gpio     # button_isr_demo: GPIO interrupt
+        esp_timer           # TaskHealthMonitor: esp_timer_get_time()
+        esp_system          # TaskHealthMonitor: esp_task_wdt / esp_restart
+        esp_http_server     # WebLoggerBackend: /logs browser view
 )

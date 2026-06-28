@@ -45,9 +45,10 @@ Or non-interactively, add to `sdkconfig` / an `sdkconfig.defaults`:
 CONFIG_MONET_CPP_EXPERIMENTAL=y
 ```
 
-When enabled, `app_main()` calls `monet_cpp_demo_run()` once at startup, which
-exercises every abstraction below and logs the result under the `CPP_DEMO`
-tag.
+When enabled, `app_main()` calls `monet_cpp_demo_run()` once at startup (which
+exercises every abstraction below and logs under the `CPP_DEMO` tag), then
+`monet_cpp_logger_demo_start()`, which brings up the **async LoggerService** and
+the **TaskHealthMonitor** as long-lived tasks (see §6–§7).
 
 ## File layout
 
@@ -65,15 +66,25 @@ components/monet_core/
     Queue.hpp
     LockGuard.hpp
     CameraFrame.hpp
-    LoggerBackend.hpp
+    LoggerBackend.hpp             # + FakeLoggerBackend (test sink)
+    LogMessage.hpp                # POD log entry + constexpr config
+    LoggerService.hpp            # async logger task + MLOG* façade
+    TaskHealthMonitor.hpp        # software watchdog + TWDT backstop
     MessageBus.hpp
     message_bus_capi.h            # C-safe wrappers around the C++ bus
-    cpp_demo.h                    # C-callable demo entry point
+    cpp_demo.h                    # C-callable demo entry points
   src_cpp/                        # C++ sources (only compiled when enabled)
     CameraFrame.cpp
-    Logger.cpp
+    Logger.cpp                    # backends incl. FakeLoggerBackend
+    LoggerService.cpp
+    TaskHealthMonitor.cpp
+    logger_demo.cpp               # wires the service + monitor into the system
     MessageBus.cpp
     cpp_demo.cpp
+test/host/                        # host-side unit tests (gcc/g++, no board)
+  shim/                           # thin FreeRTOS/ESP stand-ins
+  test_cpp_layer.cpp              # Unity tests for the C++ layer
+  run.sh                          # build + run the tests on the host
 ```
 
 The conditional compilation lives in `components/monet_core/CMakeLists.txt`:
@@ -83,11 +94,14 @@ set(srcs src/msg_bus.c src/service_registry.c)   # always
 set(include_dirs include)
 if(CONFIG_MONET_CPP_EXPERIMENTAL)
     list(APPEND srcs src_cpp/CameraFrame.cpp src_cpp/Logger.cpp
+                     src_cpp/LoggerService.cpp src_cpp/TaskHealthMonitor.cpp
+                     src_cpp/logger_demo.cpp
                      src_cpp/MessageBus.cpp src_cpp/cpp_demo.cpp)
     list(APPEND include_dirs include_cpp)
 endif()
 idf_component_register(SRCS ${srcs} INCLUDE_DIRS ${include_dirs}
-                       REQUIRES utils monet_hal)
+                       REQUIRES utils monet_hal esp_driver_gpio
+                                esp_timer esp_system)
 ```
 
 ## The C → C++ mapping
@@ -101,6 +115,8 @@ idf_component_register(SRCS ${srcs} INCLUDE_DIRS ${include_dirs}
 | `xSemaphoreTake` … `xSemaphoreGive` around a critical section | RAII `LockGuard` | `LockGuard`, used inside `MessageBus` |
 | FreeRTOS queue with `void*` + `sizeof(T)` written by hand | `Queue<T, N>` (size derived from `T`) | `Queue` |
 | Zephyr-style workqueue / message bus | FreeRTOS worker task + queue + callback (the existing `service_registry` dispatch task + `msg_bus`) | mirrored by `MessageBus` |
+| synchronous `LOGI` on the producer task | async task+queue logger with a `LoggerBackend&` injected for testability | `LoggerService`, `LogMessage` |
+| ad-hoc "is this task still alive?" checks | software watchdog with deadline tracking + ESP-IDF TWDT backstop | `TaskHealthMonitor` |
 
 ### 1. `LockGuard` — RAII over a FreeRTOS mutex
 
@@ -154,6 +170,100 @@ can drive it through the C API in `message_bus_capi.h`
 (`monet_cpp_bus_publish` / `monet_cpp_bus_subscribe[_group]`) — names kept
 distinct from `msg_bus_*` so the stable C API is never shadowed.
 
+### 6. `LoggerService` — async, backend-pluggable logging
+
+The existing `LOGI/LOGW/LOGE` macros (`components/utils/include/utils/log.h`)
+call `ESP_LOGx` **synchronously** on the producer's task — a slow console
+stalls whoever is logging. `LoggerService` makes logging asynchronous and
+testable:
+
+- Producers call `MLOGI/MLOGW/MLOGE(tag, fmt, …)` (a thin façade over
+  `default_logger().log()`), which formats a fixed-size `LogMessage` POD and
+  **try-enqueues** it onto a dedicated `monet::Queue<LogMessage, kLogQueueDepth>`
+  with timeout 0. A single drain task pops entries and writes each through the
+  active `LoggerBackend`.
+- **Back-pressure policy: try-enqueue, drop-and-count on full.** A wedged
+  console can cost log lines but can never block a producer. `dropped()` exposes
+  the count.
+- **Dependency injection.** `LoggerService(LoggerBackend&, LogClockFn = …)` —
+  the backend and clock are injected, never global. Production injects the
+  Kconfig-selected backend; tests inject a `FakeLoggerBackend` and a fake clock.
+- **Runtime backend swap** via `set_backend()` (e.g. UART → USB fallback).
+- **Locking, deliberately narrow** (per the brief's "lock what must be locked,
+  no more"): the FreeRTOS queue is already thread-safe and is **not** guarded.
+  Only the genuinely-shared mutable state — the active-backend pointer and the
+  `dropped_` counter — is guarded with `LockGuard`. The drain task even
+  *snapshots* the backend pointer under the lock and releases it before the
+  (potentially slow) `write()`, so the lock covers the pointer, not the I/O.
+
+> **Why a dedicated queue, not an `EVENT_LOG` topic on `msg_bus`?** Logs must
+> not ride the sensor bus and be discarded by its timeout-0 fan-out drop policy,
+> and the stable C `msg_bus.*` stays untouched. The trade-off is a second queue;
+> the gain is isolation and zero edits to the production bus.
+
+### 7. `TaskHealthMonitor` — software watchdog + TWDT backstop
+
+The safety-product angle: a task that silently stops making progress is worse
+than one that crashes, because nothing notices. The monitor makes "no progress"
+observable in two layers:
+
+- **Soft layer:** each registered task calls `kick(id)` once per healthy loop. A
+  supervisor task periodically calls `check()`; any task whose last kick is
+  older than its deadline is reported by name and a configurable `FailSafe`
+  (`Log` / `MarkUnhealthy` / `Reset`) runs. This layer knows *which* task missed.
+- **Hard layer:** if a task opts in (`use_wdt=true`), `kick()` also feeds the
+  ESP-IDF **Task Watchdog** (`esp_task_wdt_add`/`esp_task_wdt_reset`). If a task
+  hangs so hard it never reaches the supervisor either, the hardware-backed TWDT
+  still resets the chip.
+- **Testable time:** the millisecond clock is an injected `HealthClockFn`, so a
+  unit test marches the clock past a deadline deterministically without sleeping.
+
+`logger_demo.cpp` boots a heartbeat task (TWDT-fed), a worker task
+(soft-monitored), and a supervisor. With `CONFIG_MONET_CPP_DEMO_HANG=y` the
+worker stops checking in after a few loops and the supervisor reports the missed
+deadline. The worker is intentionally not on the TWDT, so the demo never resets
+a board by default.
+
+### Intentional task priority
+
+Logging is non-time-critical, but it must always eventually drain and must never
+preempt or invert priority against the producers that feed it. The constants
+live in `LogMessage.hpp` (`kLogTaskPriority` etc.) with `static_assert`s that
+fail the build if the relationship is violated.
+
+| Task | Priority | Why |
+| --- | --- | --- |
+| camera / mjpeg | ~10 | time-critical frame pacing |
+| sensor producers | 5 | periodic sampling (service_registry default) |
+| health supervisor | 4 | must observe even when the logger is backed up |
+| **logger drain task** | **2** | non-time-critical; **above idle** so it always drains, **below producers** so it never preempts them or inverts priority |
+| idle | 0 | — |
+
+## Testing
+
+The C++ logic is unit-tested **on the host** (plain gcc/g++, no board, no
+ESP-IDF) by compiling the real `src_cpp/` sources against thin FreeRTOS/ESP
+shims in `test/host/shim/` (a ring-buffer queue, a flag mutex, no-op
+`esp_*`/TWDT stubs, a counting `esp_camera_fb_return`). This works because the
+abstractions are written against injectable seams: `LoggerService` takes a
+`LoggerBackend&` + clock, `TaskHealthMonitor` takes a clock, and `drain_one()`
+lets a test pump the queue synchronously without a scheduler.
+
+```sh
+bash test/host/run.sh     # builds + runs the Unity suite locally and in CI
+```
+
+Coverage: log routing (enqueue → drain → `FakeBackend` received it), backend
+selection/fallback, drop-on-full counting, `LockGuard` acquire/release,
+`CameraFrame` move/release (buffer returned exactly once), `Queue`
+send/receive/full, and `TaskHealthMonitor` deadline logic. The suite runs in
+GitHub Actions alongside the existing BLE test (`.github/workflows/ci.yml`).
+
+The genuinely on-target behavior — async logging visible over the console and a
+deliberately-hung task caught by the monitor/TWDT — is verified by flashing with
+`CONFIG_MONET_CPP_EXPERIMENTAL=y` (and optionally `CONFIG_MONET_CPP_DEMO_HANG=y`)
+and watching the boot log; it cannot be a host unit test.
+
 ## Class diagram
 
 ```mermaid
@@ -179,9 +289,20 @@ classDiagram
         +sink_cb(Message) bool
     }
 
-    class Logger {
-        +backend : LoggerBackend
-        +log(text) void
+    class LoggerService {
+        +log(level, tag, fmt, …) bool
+        +start() bool
+        +set_backend(LoggerBackend&) void
+        +dropped() uint32_t
+        -queue_ : Queue~LogMessage,N~
+        -backend_ : LoggerBackend*
+        -mutex_ : SemaphoreHandle_t
+    }
+    class LogMessage {
+        +level : LogLevel
+        +ts_ms : uint32_t
+        +tag : char[]
+        +text : char[]
     }
 
     class LoggerBackend {
@@ -194,6 +315,18 @@ classDiagram
     class UsbLoggerBackend {
         +write(data, len) void
     }
+    class FakeLoggerBackend {
+        +write(data, len) void
+        +contents() const char*
+    }
+
+    class TaskHealthMonitor {
+        +register_task(name, deadline, use_wdt) int
+        +kick(id) void
+        +check() void
+        +healthy(id) bool
+        -now_ : HealthClockFn
+    }
 
     class CameraFrame {
         +get() camera_fb_t*
@@ -204,11 +337,15 @@ classDiagram
 
     LoggerBackend <|-- UartLoggerBackend
     LoggerBackend <|-- UsbLoggerBackend
-    Logger o-- LoggerBackend : uses
+    LoggerBackend <|-- FakeLoggerBackend
+    LoggerService o-- LoggerBackend : writes through
+    LoggerService *-- LogMessage : queues
     MessageBus ..> Message : publishes
     Service ..> Message : consumes
     Service ..> MessageBus : subscribes
     Service ..> CameraFrame : owns frame
+    Service ..> LoggerService : logs via MLOG*
+    TaskHealthMonitor ..> Service : monitors
     CameraFrame ..> Message : fb travels in
 ```
 
@@ -224,10 +361,16 @@ classDiagram
   only paying for runtime polymorphism when runtime selection is real.
 - **`MessageBus`** — shows the bus-as-object mapping while leaving the proven C
   bus in charge of production traffic.
+- **`LoggerService`** — async task+queue, dependency injection, intentional
+  priority and a documented back-pressure policy: the production-shaped service
+  that ties the abstractions together and actually runs in the message flow.
+- **`TaskHealthMonitor`** — turns "a task silently stopped progressing" into an
+  observable, actionable event, with an ESP-IDF Task Watchdog backstop.
 
 ## Cost when disabled
 
 `CONFIG_MONET_CPP_EXPERIMENTAL=n` (default): `src_cpp/` is not added to the
 build, `include_cpp/` is not on the include path, and the `monet_cpp_demo_run()`
-call in `main.c` is `#if`-compiled out. There is no measurable flash, RAM, or
-runtime overhead versus the pre-existing C-only firmware.
+and `monet_cpp_logger_demo_start()` calls in `main.c` are `#if`-compiled out.
+There is no measurable flash, RAM, or runtime overhead versus the pre-existing
+C-only firmware.

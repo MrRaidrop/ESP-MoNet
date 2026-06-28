@@ -40,6 +40,20 @@ config MONET_CPP_LOGGER_BACKEND_USB
 
 endchoice
 
+config MONET_CPP_DEMO_HANG
+    bool "Logger demo: deliberately hang a task (exercises the health monitor)"
+    default n
+    help
+        When enabled, the logger demo's worker task stops checking in after a
+        few iterations, simulating a wedged task. The TaskHealthMonitor's
+        supervisor then reports it as having missed its deadline.
+
+        Left off by default so normal boots never trip the watchdog. The
+        worker is intentionally NOT subscribed to the hardware Task Watchdog,
+        so even with this on the chip is not reset — only the soft monitor
+        logs the offender. (To see a real TWDT reset, set use_wdt=true when
+        registering the worker in logger_demo.cpp.)
+
 endif # MONET_CPP_EXPERIMENTAL
 
 endmenu # Monet Core

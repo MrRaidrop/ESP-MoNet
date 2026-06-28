@@ -36,6 +36,19 @@ void UsbLoggerBackend::write(const char* data, size_t len) {
     }
 }
 
+// Test backend: append into the capture buffer, never touch a peripheral.
+void FakeLoggerBackend::write(const char* data, size_t len) {
+    ++writes_;
+    if (data == nullptr || len == 0) {
+        return;
+    }
+    size_t room = kCapacity - len_;
+    size_t n = len < room ? len : room;  // truncate on overflow, still counted
+    std::memcpy(buf_ + len_, data, n);
+    len_ += n;
+    buf_[len_] = '\0';
+}
+
 // Function-local statics: constructed once, no heap, thread-safe init.
 UartLoggerBackend& uart_logger_backend() {
     static UartLoggerBackend backend;

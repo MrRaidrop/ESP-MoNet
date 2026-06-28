@@ -18,6 +18,12 @@ extern "C" {
 // It allocates nothing on the heap and returns when finished.
 void monet_cpp_demo_run(void);
 
+// Starts the asynchronous LoggerService and a small set of demo tasks that log
+// through it and check in with the TaskHealthMonitor. Long-lived: it spawns
+// tasks and returns. With CONFIG_MONET_CPP_DEMO_HANG, one task deliberately
+// stops checking in so the monitor reports the missed deadline.
+void monet_cpp_logger_demo_start(void);
+
 #ifdef __cplusplus
 }
 #endif

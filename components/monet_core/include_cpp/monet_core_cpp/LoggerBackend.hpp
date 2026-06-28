@@ -55,6 +55,26 @@ public:
     using LoggerBackend::write;
 };
 
+// Records every write into a fixed in-memory buffer instead of a peripheral.
+// Exists for tests: inject one in place of a real backend (LoggerService takes
+// a LoggerBackend&) and assert on what the service actually emitted. No heap —
+// the capture buffer is a member array; writes past capacity are truncated but
+// still counted, so "did it try to write too much" stays observable.
+class FakeLoggerBackend final : public LoggerBackend {
+public:
+    void write(const char* data, size_t len) override;
+    using LoggerBackend::write;
+
+    const char* contents() const { return buf_; }   // NUL-terminated capture
+    size_t      writes() const { return writes_; }   // number of write() calls
+
+private:
+    static constexpr size_t kCapacity = 512;
+    char   buf_[kCapacity + 1] = {};  // +1 keeps a trailing NUL for contents()
+    size_t len_ = 0;
+    size_t writes_ = 0;
+};
+
 // Accessors for the static backend singletons (no allocation).
 UartLoggerBackend& uart_logger_backend();
 UsbLoggerBackend& usb_logger_backend();

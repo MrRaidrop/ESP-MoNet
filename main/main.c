@@ -89,6 +89,12 @@ void app_main(void)
         return;
     }
 
+#if CONFIG_MONET_CPP_EXPERIMENTAL
+    /* async LoggerService + TaskHealthMonitor + log web view (needs Wi-Fi up).
+     * Logs at http://<board-ip>:8080/ */
+    monet_cpp_logger_demo_start();
+#endif
+
     //service_registry_register(get_wifi_service());
     //service_registry_register(get_light_uploader_service());
     service_registry_register(get_http_uploader_service());
