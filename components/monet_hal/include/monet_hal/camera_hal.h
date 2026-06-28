@@ -62,7 +62,12 @@ camera_fb_t *camera_hal_capture(void);
 #define CAM_FRAME_SIZE   FRAMESIZE_QVGA
 #define CAM_JPEG_QUALITY 12
 #define CAM_FB_COUNT     2
-#define CAM_XCLK_FREQ_HZ 20 * 1000 * 1000  // 20 MHz
+/* 24 MHz, NOT 20 MHz: a 20 MHz XCLK has harmonics every 20 MHz (…2420, 2440…)
+ * which land inside every 22 MHz-wide 2.4 GHz WiFi channel and desensitise the
+ * radio — measured ~280x WiFi throughput drop and 100% ping loss with the camera
+ * on. 24 MHz moves the harmonics off-channel: WiFi stays healthy and the stream
+ * runs ~65 fps QVGA. Do not lower this back to a multiple of 20 MHz. */
+#define CAM_XCLK_FREQ_HZ 24 * 1000 * 1000  // 24 MHz
 #define CAM_I2C_PORT     1         // I2C port for camera (default is 0)
 
 
