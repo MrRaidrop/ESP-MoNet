@@ -20,3 +20,7 @@ frames/
 server/cert.pem
 server/key.pem
 server/_local_cert/
+
+# Local dev aids / agent state — not for the repo
+CLAUDE.md
+.claude/
