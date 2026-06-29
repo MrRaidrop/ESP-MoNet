@@ -68,11 +68,13 @@ components/monet_core/
     LoggerBackend.hpp
     MessageBus.hpp
     message_bus_capi.h            # C-safe wrappers around the C++ bus
+    button_isr_demo.h             # C-callable: GPIO ISR -> queue -> task demo
     cpp_demo.h                    # C-callable demo entry point
   src_cpp/                        # C++ sources (only compiled when enabled)
     CameraFrame.cpp
     Logger.cpp
     MessageBus.cpp
+    button_isr_demo.cpp
     cpp_demo.cpp
 ```
 
@@ -83,11 +85,12 @@ set(srcs src/msg_bus.c src/service_registry.c)   # always
 set(include_dirs include)
 if(CONFIG_MONET_CPP_EXPERIMENTAL)
     list(APPEND srcs src_cpp/CameraFrame.cpp src_cpp/Logger.cpp
-                     src_cpp/MessageBus.cpp src_cpp/cpp_demo.cpp)
+                     src_cpp/MessageBus.cpp src_cpp/button_isr_demo.cpp
+                     src_cpp/cpp_demo.cpp)
     list(APPEND include_dirs include_cpp)
 endif()
 idf_component_register(SRCS ${srcs} INCLUDE_DIRS ${include_dirs}
-                       REQUIRES utils monet_hal)
+                       REQUIRES utils monet_hal esp_driver_gpio)
 ```
 
 ## The C → C++ mapping
@@ -153,6 +156,14 @@ file-statics, and every method guards the mutex with `LockGuard`. C modules
 can drive it through the C API in `message_bus_capi.h`
 (`monet_cpp_bus_publish` / `monet_cpp_bus_subscribe[_group]`) — names kept
 distinct from `msg_bus_*` so the stable C API is never shadowed.
+
+### 6. `button_isr_demo` — ISR → queue → task
+
+The canonical embedded interrupt pattern: a falling-edge ISR on the BOOT button
+(GPIO0) hands the press to a worker task through `Queue<T,N>::send_from_isr`
+(`xQueueSendFromISR` + `portYIELD_FROM_ISR`). The ISR stays minimal and
+IRAM-safe; the task does the logging and debounce. Shows that the same type-safe
+queue works in both thread and interrupt context.
 
 ## Class diagram
 
